@@ -88,7 +88,7 @@ public:
     int getHeight() const;
 
 private:
-
+    std::vector<std::vector<Candy*>> m_board;
     /// Students can add as many protected methods and attributes as needed.
 };
 
