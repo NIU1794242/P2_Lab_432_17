@@ -8,6 +8,7 @@ Board::Board(int width, int height)
     // Implement your code here
     m_height = height;
     m_width = width;
+    m_storage.reserve(m_width * m_height);
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
@@ -72,54 +73,38 @@ bool Board::dump(const std::string& output_path) const
 
 bool Board::load(const std::string& input_path)
 {
-    // Implement your code here
     int x, y;
-    bool correcte = true;
     char charCandy;
-    m_storage = {};
+
+    m_storage.clear();
+
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
-    std::ifstream file;
-    file.open(input_path);
-    correcte = file.is_open();
-    while(correcte && !file.eof())
+
+    std::ifstream file(input_path);
+    if (!file.is_open())
+        return false;
+
+    while (file >> x >> y >> charCandy)
     {
-        file >> x;
-        file >> y;
-        file >> charCandy;
-        correcte = !file.fail();
-        if (correcte)
+        CandyType type;
+
+        switch (charCandy)
         {
-            switch (charCandy)
-            {
-            case 'R':
-                Candy candy(CandyType::TYPE_RED);
-                m_storage.push_back(candy);
-                break;
-            case 'G':
-                Candy candy(CandyType::TYPE_GREEN);
-                m_storage.push_back(candy);
-                break;
-            case 'B':
-                Candy candy(CandyType::TYPE_BLUE);
-                m_storage.push_back(candy);
-                break;
-            case 'Y':
-                Candy candy(CandyType::TYPE_YELLOW);
-                m_storage.push_back(candy);
-                break;
-            case 'P':
-                Candy candy(CandyType::TYPE_PURPLE);
-                m_storage.push_back(candy);
-                break;
-            case 'O':
-                Candy candy(CandyType::TYPE_ORANGE);
-                m_storage.push_back(candy);
-                break;
-            }
-            m_board[y][x] = &m_storage.back();
+        case 'R': type = CandyType::TYPE_RED; break;
+        case 'G': type = CandyType::TYPE_GREEN; break;
+        case 'B': type = CandyType::TYPE_BLUE; break;
+        case 'Y': type = CandyType::TYPE_YELLOW; break;
+        case 'P': type = CandyType::TYPE_PURPLE; break;
+        case 'O': type = CandyType::TYPE_ORANGE; break;
+        default:
+            continue; // carácter inválido
         }
+        Candy candy(type);
+        m_storage.emplace_back(candy);
+        m_board[y][x] = &m_storage.back();
     }
-    return correcte;
+
+    return true;
 }
