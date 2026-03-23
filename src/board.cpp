@@ -28,12 +28,17 @@ Board::~Board()
 Candy* Board::getCell(int x, int y) const
 {
     // Implement your code here
-    return nullptr;
+    Candy* cell = nullptr;
+    if (x >= 0 && x < m_width && y >= 0 && x < m_height)
+        cell = m_board[y][x];
+    return cell;
 }
 
 void Board::setCell(Candy* candy, int x, int y)
 {
     // Implement your code here
+    if (x >= 0 && x < m_width && y >= 0 && x < m_height)
+        m_board[y][x] = candy;
 }
 
 
