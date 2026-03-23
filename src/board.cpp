@@ -1,17 +1,16 @@
 #include "board.h"
 #include <memory>
 #include <iostream>
+#include <fstream>
 
 Board::Board(int width, int height)
 {
     // Implement your code here
     m_height = height;
     m_width = width;
-    for (int i = 0; i < height; i++)
-        for (int j = 0; j < width; j++)
-        {
+    for (int i = 0; i < m_height; i++)
+        for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
-        }
 }
 
 Board::~Board()
@@ -19,9 +18,7 @@ Board::~Board()
     // Implement your code here
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
-        {
             m_board[i][j] = nullptr;
-        }
 }
 
 
@@ -76,5 +73,53 @@ bool Board::dump(const std::string& output_path) const
 bool Board::load(const std::string& input_path)
 {
     // Implement your code here
-    return false;
+    int x, y;
+    bool correcte = true;
+    char charCandy;
+    m_storage = {};
+    for (int i = 0; i < m_height; i++)
+        for (int j = 0; j < m_width; j++)
+            m_board[i][j] = nullptr;
+    std::ifstream file;
+    file.open(input_path);
+    correcte = file.is_open();
+    while(correcte && !file.eof())
+    {
+        file >> x;
+        file >> y;
+        file >> charCandy;
+        correcte = !file.fail();
+        if (correcte)
+        {
+            switch (charCandy)
+            {
+            case 'R':
+                Candy candy(CandyType::TYPE_RED);
+                m_storage.push_back(candy);
+                break;
+            case 'G':
+                Candy candy(CandyType::TYPE_GREEN);
+                m_storage.push_back(candy);
+                break;
+            case 'B':
+                Candy candy(CandyType::TYPE_BLUE);
+                m_storage.push_back(candy);
+                break;
+            case 'Y':
+                Candy candy(CandyType::TYPE_YELLOW);
+                m_storage.push_back(candy);
+                break;
+            case 'P':
+                Candy candy(CandyType::TYPE_PURPLE);
+                m_storage.push_back(candy);
+                break;
+            case 'O':
+                Candy candy(CandyType::TYPE_ORANGE);
+                m_storage.push_back(candy);
+                break;
+            }
+            m_board[y][x] = &m_storage.back();
+        }
+    }
+    return correcte;
 }
