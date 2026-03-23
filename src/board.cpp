@@ -5,11 +5,23 @@
 Board::Board(int width, int height)
 {
     // Implement your code here
+    m_height = height;
+    m_width = width;
+    for (int i = 0; i < height; i++)
+        for (int j = 0; j < width; j++)
+        {
+            m_board[i][j] = nullptr;
+        }
 }
 
 Board::~Board()
 {
     // Implement your code here
+    for (int i = 0; i < m_height; i++)
+        for (int j = 0; j < m_width; j++)
+        {
+            m_board[i][j] = nullptr;
+        }
 }
 
 
