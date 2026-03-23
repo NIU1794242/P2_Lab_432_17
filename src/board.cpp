@@ -45,14 +45,14 @@ void Board::setCell(Candy* candy, int x, int y)
 int Board::getWidth() const
 {
     // Implement your code here
-    return -1;
+    return m_width;
 }
 
 
 int Board::getHeight() const
 {
     // Implement your code here
-    return -1;
+    return m_height;
 }
 
 bool Board::shouldExplode(int x, int y) const
