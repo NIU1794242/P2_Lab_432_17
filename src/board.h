@@ -89,6 +89,9 @@ public:
 
 private:
     Candy* m_board[DEFAULT_BOARD_HEIGHT][DEFAULT_BOARD_WIDTH];
+    Candy m_storage[DEFAULT_BOARD_HEIGHT][DEFAULT_BOARD_WIDTH];
+    int m_height;
+    int m_width;
     /// Students can add as many protected methods and attributes as needed.
 };
 
