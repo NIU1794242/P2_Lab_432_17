@@ -3,9 +3,23 @@
 #include <iostream>
 #include <fstream>
 
-Board::Board(int width, int height) : m_width(width), m_height(height), m_storage(m_height, std::vector<Candy>(height))
+Board::Board(int width, int height)
 {
     // Implement your code here
+    if (width <= 0)
+        m_width = DEFAULT_BOARD_WIDTH;
+    else if (width > MAX_SIZE)
+        m_width = MAX_SIZE;
+    else
+        m_width = width;
+
+    if (height <= 0)
+        m_height = DEFAULT_BOARD_HEIGHT;
+    else if (height > MAX_SIZE)
+        m_height = MAX_SIZE;
+    else
+        m_height = height;
+
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
@@ -65,6 +79,7 @@ std::vector<Candy*> Board::explodeAndDrop()
 bool Board::dump(const std::string& output_path) const
 {
     // Implement your code here
+    /*
     bool correcte = true;
     char charCandy = '-';
     std::ofstream file(output_path);
@@ -97,11 +112,14 @@ bool Board::dump(const std::string& output_path) const
     file.close();
 
     return correcte;
+    */
+    return false;
 }
 
 bool Board::load(const std::string& input_path)
 {
     // Implement your code here
+    /*
     int x, y;
     char charCandy;
     bool correcte = true;
@@ -141,4 +159,6 @@ bool Board::load(const std::string& input_path)
     file.close();
     
     return correcte;
+    */
+    return false;
 }

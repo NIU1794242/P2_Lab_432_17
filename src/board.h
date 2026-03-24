@@ -14,6 +14,7 @@
 /// Default board dimensions
 const int DEFAULT_BOARD_WIDTH = 10;
 const int DEFAULT_BOARD_HEIGHT = 10;
+const int MAX_SIZE = 1500;
 
 /// Number of candy pieces of the same type needed to explode a horizontal, vertical or diagonal line
 const int SHORTEST_EXPLOSION_LINE = 3;
@@ -88,7 +89,7 @@ public:
     int getHeight() const;
 
 private:
-    Candy* m_board[DEFAULT_BOARD_HEIGHT][DEFAULT_BOARD_WIDTH];
+    Candy* m_board[MAX_SIZE][MAX_SIZE];
     std::vector<std::vector<Candy>> m_storage;
     int m_height;
     int m_width;
