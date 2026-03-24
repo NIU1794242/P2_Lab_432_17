@@ -15,7 +15,6 @@
 /// Default board dimensions
 const int DEFAULT_BOARD_WIDTH = 10;
 const int DEFAULT_BOARD_HEIGHT = 10;
-const int MAX_SIZE = 300;
 
 /// Number of candy pieces of the same type needed to explode a horizontal, vertical or diagonal line
 const int SHORTEST_EXPLOSION_LINE = 3;
@@ -91,12 +90,16 @@ public:
 
 
 private:
-    Candy* m_board[MAX_SIZE][MAX_SIZE];
+    std::vector<std::vector<Candy*>> m_board;
     int m_height;
     int m_width;
+    Candy m_candyRed;
+    Candy m_candyGreen;
+    Candy m_candyBlue;
+    Candy m_candyYellow;
+    Candy m_candyPurple;
+    Candy m_candyOrange;
     /// Students can add as many protected methods and attributes as needed.
 };
 
 #endif
-
-std::ifstream& operator>>(std::ifstream& input, Board& board);

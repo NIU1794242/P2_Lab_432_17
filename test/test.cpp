@@ -15,7 +15,6 @@ bool test()
     {
         return false;
     }
-
     // Dump and load board
     {
         Board b2(10, 10);
@@ -54,6 +53,6 @@ bool test()
         }
         std::filesystem::remove(getDataDirPath() + "dump_game.txt");
     }
-
+    
     return true;
 }
