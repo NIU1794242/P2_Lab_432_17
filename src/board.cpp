@@ -129,8 +129,8 @@ bool Board::load(const std::string& input_path)
             if (type != CandyType::COUNT)
             {
                 Candy candy(type);
-                m_storage.emplace_back(candy);
-                m_board[y][x] = &m_storage.back();
+                m_storage[y][x] = candy;
+                m_board[y][x] = &m_storage[y][x];
             }
         }
     else
