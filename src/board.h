@@ -89,7 +89,7 @@ public:
 
 private:
     Candy* m_board[DEFAULT_BOARD_HEIGHT][DEFAULT_BOARD_WIDTH];
-    std::vector<Candy> m_storage;
+    std::vector<std::vector<Candy>> m_storage;
     int m_height;
     int m_width;
     /// Students can add as many protected methods and attributes as needed.
