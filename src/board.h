@@ -8,20 +8,14 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
 
 #include "candy.h"
 
 /// Default board dimensions
 const int DEFAULT_BOARD_WIDTH = 10;
 const int DEFAULT_BOARD_HEIGHT = 10;
-const int MAX_SIZE = 1500;
-
-Candy candyRed(CandyType::TYPE_RED);
-Candy candyGreen(CandyType::TYPE_GREEN);
-Candy candyBlue(CandyType::TYPE_BLUE);
-Candy candyYellow(CandyType::TYPE_YELLOW);
-Candy candyPurple(CandyType::TYPE_PURPLE);
-Candy candyOrange(CandyType::TYPE_ORANGE);
+const int MAX_SIZE = 300;
 
 /// Number of candy pieces of the same type needed to explode a horizontal, vertical or diagonal line
 const int SHORTEST_EXPLOSION_LINE = 3;
@@ -95,6 +89,7 @@ public:
     /// Get the board height
     int getHeight() const;
 
+
 private:
     Candy* m_board[MAX_SIZE][MAX_SIZE];
     int m_height;
@@ -103,3 +98,5 @@ private:
 };
 
 #endif
+
+std::ifstream& operator>>(std::ifstream& input, Board& board);

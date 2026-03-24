@@ -1,7 +1,13 @@
 #include "board.h"
 #include <memory>
 #include <iostream>
-#include <fstream>
+
+Candy candyRed(CandyType::TYPE_RED);
+Candy candyGreen(CandyType::TYPE_GREEN);
+Candy candyBlue(CandyType::TYPE_BLUE);
+Candy candyYellow(CandyType::TYPE_YELLOW);
+Candy candyPurple(CandyType::TYPE_PURPLE);
+Candy candyOrange(CandyType::TYPE_ORANGE);
 
 Board::Board(int width, int height)
 {
@@ -38,7 +44,7 @@ Candy* Board::getCell(int x, int y) const
 {
     // Implement your code here
     Candy* cell = nullptr;
-    if (x >= 0 && x < m_width && y >= 0 && x < m_height)
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height)
         cell = m_board[y][x];
     return cell;
 }
@@ -46,7 +52,7 @@ Candy* Board::getCell(int x, int y) const
 void Board::setCell(Candy* candy, int x, int y)
 {
     // Implement your code here
-    if (x >= 0 && x < m_width && y >= 0 && x < m_height)
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height)
         m_board[y][x] = candy;
 }
 
@@ -68,7 +74,7 @@ bool Board::shouldExplode(int x, int y) const
 {
     bool explode = false;
     
-    if (x >= 0 && x < m_width && y >= 0 && x < m_height)
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height && m_board[y][x] != nullptr)
     {
         CandyType type = m_board[y][x]->getType();
         int count = 1;
@@ -117,13 +123,15 @@ bool Board::shouldExplode(int x, int y) const
         }
         explode = count >= SHORTEST_EXPLOSION_LINE;
         // NW/SE
-        while (!explode && y + steps < m_height && x - steps < m_width && m_board[y + steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        count = 1;
+        steps = 1;
+        while (!explode && y + steps < m_height && x - steps >= 0 && m_board[y + steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
         {
             count++;
             steps++;
         }
         steps = 1;
-        while (!explode && y - steps >= 0 && x + steps >= 0 && m_board[y - steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        while (!explode && y - steps >= 0 && x + steps < m_width && m_board[y - steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
         {
             count++;
             steps++;
@@ -142,18 +150,18 @@ std::vector<Candy*> Board::explodeAndDrop()
 bool Board::dump(const std::string& output_path) const
 {
     // Implement your code here
-    
     bool correcte = true;
     char charCandy = '-';
     std::ofstream file(output_path);
     if (file.is_open())
     {
-        for (int i = 0; i < m_width; i++)
+        for (int x = 0; x < m_width; x++)
         {
-            int j = m_height-1;
-            while (m_board[j][i] != nullptr)
+            int y = m_height-1;
+            while (y >= 0 && m_board[y][x] != nullptr)
             {
-                switch (m_board[j][i]->getType())
+                CandyType type = m_board[y][x]->getType();
+                switch (type)
                 {
                 case CandyType::TYPE_RED: charCandy = 'R'; break;
                 case CandyType::TYPE_GREEN: charCandy = 'G'; break;
@@ -163,8 +171,8 @@ bool Board::dump(const std::string& output_path) const
                 case CandyType::TYPE_ORANGE: charCandy = 'O'; break;
                 default: charCandy = '-';
                 }
-                file << i << ' ' << j << ' ' << charCandy << std::endl;
-                j--;
+                file << x << ' ' << y << ' ' << m_board[y][x] << std::endl;
+                y--;
             } 
         }
     }
@@ -173,22 +181,22 @@ bool Board::dump(const std::string& output_path) const
 
     file.close();
 
-    return correcte;    
+    return correcte;
 }
 
 bool Board::load(const std::string& input_path)
 {
     // Implement your code here
-    
     int x, y;
     char charCandy;
     bool correcte = true;
 
-    for (int i = 0; i < m_height; i++)
-        for (int j = 0; j < m_width; j++)
-            m_board[i][j] = nullptr;
-
-    std::ifstream file(input_path);
+    for (int y = 0; y < m_height; y++)
+        for (int x = 0; x < m_width; x++)
+            m_board[y][x] = nullptr;
+    
+    std::ifstream file;
+    file.open(input_path);
     if (file.is_open())
         while (file >> x >> y >> charCandy)
             switch (charCandy)
@@ -206,4 +214,21 @@ bool Board::load(const std::string& input_path)
     file.close();
     
     return correcte;
+}
+
+std::ifstream& operator>>(std::ifstream& input, Board& board)
+{
+    int x, y;
+    char charCandy;
+    input >> x >> y >> charCandy;
+    switch (charCandy)
+    {
+    case 'R': board.setCell(&candyRed, x, y); break;
+    case 'G': board.setCell(&candyGreen, x, y); break;
+    case 'B': board.setCell(&candyBlue, x, y); break;
+    case 'Y': board.setCell(&candyYellow, x, y); break;
+    case 'P': board.setCell(&candyPurple, x, y); break;
+    case 'O': board.setCell(&candyOrange, x, y); break;
+    }
+    
 }
