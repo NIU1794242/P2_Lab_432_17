@@ -94,6 +94,8 @@ bool Board::dump(const std::string& output_path) const
     else
         correcte = false;
 
+    file.close();
+
     return correcte;
 }
 
@@ -135,6 +137,8 @@ bool Board::load(const std::string& input_path)
         }
     else
         correcte = false;
-
+    
+    file.close();
+    
     return correcte;
 }
