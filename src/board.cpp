@@ -20,6 +20,12 @@ Board::Board(int width, int height)
     else
         m_height = height;
 
+    m_storage.reserve(m_height);
+    for (int i = 0; i < m_height; i++)
+    {
+        m_storage.reserve(m_width);
+    }
+
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
@@ -66,8 +72,71 @@ int Board::getHeight() const
 
 bool Board::shouldExplode(int x, int y) const
 {
-    // Implement your code here
-    return false;
+    bool explode = false;
+
+    if (x >= 0 && x < m_width && y >= 0 && x < m_height)
+    {
+        CandyType type = m_board[y][x]->getType();
+        int count = 1;
+        int steps = 1;
+        // N/S
+        while (y + steps < m_height && m_board[y + steps][x]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        steps = 1;
+        while (y - steps >= 0 && m_board[y - steps][x]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        explode = count >= SHORTEST_EXPLOSION_LINE;
+        // E/W
+        count = 1;
+        steps = 1;
+        while (!explode && x + steps < m_width && m_board[y][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        steps = 1;
+        while (!explode && x - steps >= 0 && m_board[y][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        explode = count >= SHORTEST_EXPLOSION_LINE;
+        // NE/SW
+        count = 1;
+        steps = 1;
+        while (!explode && y + steps < m_height && x + steps < m_width && m_board[y + steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        steps = 1;
+        while (!explode && y - steps >= 0 && x - steps >= 0 && m_board[y - steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        explode = count >= SHORTEST_EXPLOSION_LINE;
+        // NW/SE
+        while (!explode && y + steps < m_height && x - steps < m_width && m_board[y + steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        steps = 1;
+        while (!explode && y - steps >= 0 && x + steps >= 0 && m_board[y - steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+        {
+            count++;
+            steps++;
+        }
+        explode = count >= SHORTEST_EXPLOSION_LINE;
+    }
+    return explode;
 }
 
 std::vector<Candy*> Board::explodeAndDrop()
@@ -79,7 +148,7 @@ std::vector<Candy*> Board::explodeAndDrop()
 bool Board::dump(const std::string& output_path) const
 {
     // Implement your code here
-    /*
+    
     bool correcte = true;
     char charCandy = '-';
     std::ofstream file(output_path);
@@ -112,14 +181,14 @@ bool Board::dump(const std::string& output_path) const
     file.close();
 
     return correcte;
-    */
-    return false;
+    
+    //return false;
 }
 
 bool Board::load(const std::string& input_path)
 {
     // Implement your code here
-    /*
+    
     int x, y;
     char charCandy;
     bool correcte = true;
@@ -159,6 +228,6 @@ bool Board::load(const std::string& input_path)
     file.close();
     
     return correcte;
-    */
-    return false;
+    
+    //return false;
 }
