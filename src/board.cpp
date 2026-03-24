@@ -20,8 +20,6 @@ Board::Board(int width, int height)
     else
         m_height = height;
 
-    m_storage.reserve(m_height * m_width);
-
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
@@ -186,8 +184,6 @@ bool Board::load(const std::string& input_path)
     char charCandy;
     bool correcte = true;
 
-    m_storage.clear();
-
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
             m_board[i][j] = nullptr;
@@ -195,26 +191,15 @@ bool Board::load(const std::string& input_path)
     std::ifstream file(input_path);
     if (file.is_open())
         while (file >> x >> y >> charCandy)
-        {
-            CandyType type;
-
             switch (charCandy)
             {
-            case 'R': type = CandyType::TYPE_RED; break;
-            case 'G': type = CandyType::TYPE_GREEN; break;
-            case 'B': type = CandyType::TYPE_BLUE; break;
-            case 'Y': type = CandyType::TYPE_YELLOW; break;
-            case 'P': type = CandyType::TYPE_PURPLE; break;
-            case 'O': type = CandyType::TYPE_ORANGE; break;
-            default: type = CandyType::COUNT; break;
+            case 'R': m_board[y][x] = &candyRed; break;
+            case 'G': m_board[y][x] = &candyGreen; break;
+            case 'B': m_board[y][x] = &candyBlue; break;
+            case 'Y': m_board[y][x] = &candyYellow; break;
+            case 'P': m_board[y][x] = &candyPurple; break;
+            case 'O': m_board[y][x] = &candyOrange; break;
             }
-            if (type != CandyType::COUNT)
-            {
-                Candy candy(type);
-                m_storage.push_back(candy);
-                m_board[y][x] = &m_storage.back();
-            }
-        }
     else
         correcte = false;
     
