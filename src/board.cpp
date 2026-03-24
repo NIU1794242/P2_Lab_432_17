@@ -20,11 +20,7 @@ Board::Board(int width, int height)
     else
         m_height = height;
 
-    m_storage.reserve(m_height);
-    for (int i = 0; i < m_height; i++)
-    {
-        m_storage.reserve(m_width);
-    }
+    m_storage.reserve(m_height * m_width);
 
     for (int i = 0; i < m_height; i++)
         for (int j = 0; j < m_width; j++)
@@ -73,7 +69,7 @@ int Board::getHeight() const
 bool Board::shouldExplode(int x, int y) const
 {
     bool explode = false;
-
+    
     if (x >= 0 && x < m_width && y >= 0 && x < m_height)
     {
         CandyType type = m_board[y][x]->getType();
@@ -159,7 +155,7 @@ bool Board::dump(const std::string& output_path) const
             int j = m_height-1;
             while (m_board[j][i] != nullptr)
             {
-                switch ((*m_board[j][i]).getType())
+                switch (m_board[j][i]->getType())
                 {
                 case CandyType::TYPE_RED: charCandy = 'R'; break;
                 case CandyType::TYPE_GREEN: charCandy = 'G'; break;
@@ -173,16 +169,13 @@ bool Board::dump(const std::string& output_path) const
                 j--;
             } 
         }
-        
     }
     else
         correcte = false;
 
     file.close();
 
-    return correcte;
-    
-    //return false;
+    return correcte;    
 }
 
 bool Board::load(const std::string& input_path)
@@ -218,8 +211,8 @@ bool Board::load(const std::string& input_path)
             if (type != CandyType::COUNT)
             {
                 Candy candy(type);
-                m_storage[y][x] = candy;
-                m_board[y][x] = &m_storage[y][x];
+                m_storage.push_back(candy);
+                m_board[y][x] = &m_storage.back();
             }
         }
     else
@@ -228,6 +221,4 @@ bool Board::load(const std::string& input_path)
     file.close();
     
     return correcte;
-    
-    //return false;
 }

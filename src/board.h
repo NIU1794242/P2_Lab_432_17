@@ -90,7 +90,7 @@ public:
 
 private:
     Candy* m_board[MAX_SIZE][MAX_SIZE];
-    std::vector<std::vector<Candy>> m_storage;
+    std::vector<Candy> m_storage;
     int m_height;
     int m_width;
     /// Students can add as many protected methods and attributes as needed.
