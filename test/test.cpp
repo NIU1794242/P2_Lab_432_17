@@ -57,7 +57,8 @@ bool test()
     
     return true;
 }
-*/#include <cstdio> 
+*/
+#include <cstdio> 
 #include <iostream> 
 #include <string> 
 #include <vector>
@@ -70,7 +71,7 @@ bool test()
 bool test()
 {
     bool ok = true;
-
+    
     // 1. Constructor, ancho, alto y tablero vacío
     { 
         Board b(4, 3);
@@ -99,23 +100,23 @@ bool test()
             }
         }
     }
-
+    
     // 2. getCell y setCell en caso válido
     {
         Board b(3, 3);
-        Candy red(CandyType::TYPE_RED);
-        Candy blue(CandyType::TYPE_BLUE);
+        Candy* red = new Candy(CandyType::TYPE_RED);
+        Candy* blue = new Candy(CandyType::TYPE_BLUE);
 
-        b.setCell(&red, 0, 0);
-        b.setCell(&blue, 2, 1);
+        b.setCell(red, 0, 0);
+        b.setCell(blue, 2, 1);
 
-        if (b.getCell(0, 0) != &red)
+        if (b.getCell(0, 0) != red)
         {
             std::cout << "Error en setCell/getCell en (0,0)" << std::endl;
             ok = false;
         }
 
-        if (b.getCell(2, 1) != &blue) 
+        if (b.getCell(2, 1) != blue)
         {
             std::cout << "Error en setCell/getCell en (2,1)" << std::endl;
             ok = false;
@@ -129,13 +130,13 @@ bool test()
             ok = false;
         }
     }
-
+    
     // 3. Casos inválidos de getCell y setCell
     {
         Board b(2, 2);
-        Candy orange(CandyType::TYPE_ORANGE);
+        Candy* orange = new Candy(CandyType::TYPE_ORANGE);
 
-        b.setCell(&orange, 0, 0);
+        b.setCell(orange, 0, 0);
 
         if (b.getCell(-1, 0) != nullptr)
         {
@@ -143,7 +144,7 @@ bool test()
             ok = false;
         }
 
-        if (b.getCell(0, -1) != nullptr) 
+        if (b.getCell(0, -1) != nullptr)
         {
             std::cout << "getCell(0,-1) debería devolver nullptr" << std::endl;
             ok = false;
@@ -161,27 +162,27 @@ bool test()
             ok = false;
         }
 
-        b.setCell(&orange, -1, 0);
-        b.setCell(&orange, 0, -1);
-        b.setCell(&orange, 2, 0);
-        b.setCell(&orange, 0, 2); 
+        b.setCell(orange, -1, 0);
+        b.setCell(orange, 0, -1);
+        b.setCell(orange, 2, 0);
+        b.setCell(orange, 0, 2);
 
-        if (b.getCell(0, 0) != &orange)
+        if (b.getCell(0, 0) != orange)
         {
             std::cout << "setCell fuera de rango ha cambiado una celda válida" << std::endl;
             ok = false;
         }
-        
+
     }
 
     // 4. shouldExplode: casos inválidos y sin falso positivo
     {
         Board b(4, 4);
-        Candy g1(CandyType::TYPE_GREEN);
-        Candy g2(CandyType::TYPE_GREEN);
+        Candy* g1 = new Candy(CandyType::TYPE_GREEN);
+        Candy* g2 = new Candy(CandyType::TYPE_GREEN);
 
-        b.setCell(&g1, 0, 0);
-        b.setCell(&g2, 1, 0);
+        b.setCell(g1, 0, 0);
+        b.setCell(g2, 1, 0);
 
         if (b.shouldExplode(-1, 0))
         {
@@ -205,13 +206,13 @@ bool test()
     // 5. shouldExplode horizontal
     {
         Board b(4, 4);
-        Candy r1(CandyType::TYPE_RED);
-        Candy r2(CandyType::TYPE_RED);
-        Candy r3(CandyType::TYPE_RED);
+        Candy* r1 = new Candy(CandyType::TYPE_RED);
+        Candy* r2 = new Candy(CandyType::TYPE_RED);
+        Candy* r3 = new Candy(CandyType::TYPE_RED);
 
-        b.setCell(&r1, 0, 1);
-        b.setCell(&r2, 1, 1);
-        b.setCell(&r3, 2, 1);
+        b.setCell(r1, 0, 1);
+        b.setCell(r2, 1, 1);
+        b.setCell(r3, 2, 1);
 
         if (!b.shouldExplode(0, 1) || !b.shouldExplode(1, 1) || !b.shouldExplode(2, 1))
         {
@@ -223,13 +224,13 @@ bool test()
     // 6. shouldExplode vertical
     {
         Board b(4, 4);
-        Candy y1(CandyType::TYPE_YELLOW);
-        Candy y2(CandyType::TYPE_YELLOW);
-        Candy y3(CandyType::TYPE_YELLOW);
+        Candy* y1 = new Candy(CandyType::TYPE_YELLOW);
+        Candy* y2 = new Candy(CandyType::TYPE_YELLOW);
+        Candy* y3 = new Candy(CandyType::TYPE_YELLOW);
 
-        b.setCell(&y1, 2, 0);
-        b.setCell(&y2, 2, 1);
-        b.setCell(&y3, 2, 2);
+        b.setCell(y1, 2, 0);
+        b.setCell(y2, 2, 1);
+        b.setCell(y3, 2, 2);
 
         if (!b.shouldExplode(2, 0) || !b.shouldExplode(2, 1) || !b.shouldExplode(2, 2))
         {
@@ -241,13 +242,13 @@ bool test()
     // 7. shouldExplode diagonal principal
     {
         Board b(4, 4);
-        Candy p1(CandyType::TYPE_PURPLE);
-        Candy p2(CandyType::TYPE_PURPLE);
-        Candy p3(CandyType::TYPE_PURPLE);
+        Candy* p1 = new Candy(CandyType::TYPE_PURPLE);
+        Candy* p2 = new Candy(CandyType::TYPE_PURPLE);
+        Candy* p3 = new Candy(CandyType::TYPE_PURPLE);
 
-        b.setCell(&p1, 0, 0);
-        b.setCell(&p2, 1, 1);
-        b.setCell(&p3, 2, 2);
+        b.setCell(p1, 0, 0);
+        b.setCell(p2, 1, 1);
+        b.setCell(p3, 2, 2);
 
         if (!b.shouldExplode(0, 0) || !b.shouldExplode(1, 1) || !b.shouldExplode(2, 2))
         {
@@ -259,13 +260,13 @@ bool test()
     // 8. shouldExplode diagonal secundaria
     {
         Board b(4, 4);
-        Candy o1(CandyType::TYPE_ORANGE);
-        Candy o2(CandyType::TYPE_ORANGE);
-        Candy o3(CandyType::TYPE_ORANGE);
+        Candy* o1 = new Candy(CandyType::TYPE_ORANGE);
+        Candy* o2 = new Candy(CandyType::TYPE_ORANGE);
+        Candy* o3 = new Candy(CandyType::TYPE_ORANGE);
 
-        b.setCell(&o1, 2, 0);
-        b.setCell(&o2, 1, 1);
-        b.setCell(&o3, 0, 2);
+        b.setCell(o1, 2, 0);
+        b.setCell(o2, 1, 1);
+        b.setCell(o3, 0, 2);
 
         if (!b.shouldExplode(2, 0) || !b.shouldExplode(1, 1) || !b.shouldExplode(0, 2))
         {
@@ -277,11 +278,11 @@ bool test()
     // 9. explodeAndDrop cuando no hay explosión
     {
         Board b(3, 3);
-        Candy red(CandyType::TYPE_RED);
-        Candy blue(CandyType::TYPE_BLUE);
+        Candy* red = new Candy(CandyType::TYPE_RED);
+        Candy* blue = new Candy(CandyType::TYPE_BLUE);
 
-        b.setCell(&red, 0, 0);
-        b.setCell(&blue, 2, 2);
+        b.setCell(red, 0, 0);
+        b.setCell(blue, 2, 2);
 
         std::vector<Candy*> exploded = b.explodeAndDrop();
 
@@ -291,7 +292,7 @@ bool test()
             ok = false;
         }
 
-        if (b.getCell(0, 0) != &red || b.getCell(2, 2) != &blue)
+        if (b.getCell(0, 0) != red || b.getCell(2, 2) != blue)
         {
             std::cout << "explodeAndDrop ha cambiado el tablero sin motivo" << std::endl;
             ok = false;
@@ -301,15 +302,15 @@ bool test()
     // 10. explodeAndDrop simple con caída
     {
         Board b(3, 4);
-        Candy r1(CandyType::TYPE_RED);
-        Candy r2(CandyType::TYPE_RED);
-        Candy r3(CandyType::TYPE_RED);
-        Candy blue(CandyType::TYPE_BLUE);
+        Candy* r1 = new Candy(CandyType::TYPE_RED);
+        Candy* r2 = new Candy(CandyType::TYPE_RED);
+        Candy* r3 = new Candy(CandyType::TYPE_RED);
+        Candy* blue = new Candy(CandyType::TYPE_BLUE);
 
-        b.setCell(&r1, 0, 3);
-        b.setCell(&r2, 1, 3);
-        b.setCell(&r3, 2, 3);
-        b.setCell(&blue, 1, 1);
+        b.setCell(r1, 0, 3);
+        b.setCell(r2, 1, 3);
+        b.setCell(r3, 2, 3);
+        b.setCell(blue, 1, 1);
 
         std::vector<Candy*> exploded = b.explodeAndDrop();
 
@@ -319,7 +320,7 @@ bool test()
             ok = false;
         }
 
-        if (b.getCell(1, 3) != &blue)
+        if (b.getCell(1, 3) != blue)
         {
             std::cout << "El caramelo azul no ha caído bien" << std::endl;
             ok = false;
@@ -330,22 +331,22 @@ bool test()
     {
         Board b(3, 4);
 
-        Candy r1(CandyType::TYPE_RED);
-        Candy r2(CandyType::TYPE_RED);
-        Candy r3(CandyType::TYPE_RED);
-
-        Candy g1(CandyType::TYPE_GREEN);
-        Candy g2(CandyType::TYPE_GREEN);
-        Candy g3(CandyType::TYPE_GREEN);
+        Candy* r1 = new Candy(CandyType::TYPE_RED);
+        Candy* r2 = new Candy(CandyType::TYPE_RED);
+        Candy* r3 = new Candy(CandyType::TYPE_RED);
+                 
+        Candy* g1 = new Candy(CandyType::TYPE_GREEN);
+        Candy* g2 = new Candy(CandyType::TYPE_GREEN);
+        Candy* g3 = new Candy(CandyType::TYPE_GREEN);
 
         // Primera explosión: columna roja en x = 1
-        b.setCell(&g1, 0, 3);
-        b.setCell(&g2, 1, 0);
-        b.setCell(&g3, 2, 3);
+        b.setCell(g1, 0, 3);
+        b.setCell(g2, 1, 0);
+        b.setCell(g3, 2, 3);
 
-        b.setCell(&r1, 1, 1);
-        b.setCell(&r2, 1, 2);
-        b.setCell(&r3, 1, 3);
+        b.setCell(r1, 1, 1);
+        b.setCell(r2, 1, 2);
+        b.setCell(r3, 1, 3);
 
         std::vector<Candy*> exploded = b.explodeAndDrop();
 
@@ -371,13 +372,13 @@ bool test()
     // 12. dump y load correctos
     {
         Board b1(4, 4);
-        Candy c1(CandyType::TYPE_RED);
-        Candy c2(CandyType::TYPE_BLUE);
-        Candy c3(CandyType::TYPE_GREEN);
+        Candy* c1 = new Candy(CandyType::TYPE_RED);
+        Candy* c2 = new Candy(CandyType::TYPE_BLUE);
+        Candy* c3 = new Candy(CandyType::TYPE_GREEN);
 
-        b1.setCell(&c1, 0, 0);
-        b1.setCell(&c2, 2, 1);
-        b1.setCell(&c3, 3, 3);
+        b1.setCell(c1, 0, 0);
+        b1.setCell(c2, 2, 1);
+        b1.setCell(c3, 3, 3);
 
         std::string fileName = getDataDirPath() + "board_test.txt";
 
@@ -437,6 +438,6 @@ bool test()
             ok = false;
         }
     }
-
+    
     return ok;
 }

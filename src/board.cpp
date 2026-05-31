@@ -7,10 +7,10 @@ m_candyRed(CandyType::TYPE_RED), m_candyGreen(CandyType::TYPE_GREEN), m_candyBlu
 m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_candyOrange(CandyType::TYPE_ORANGE)
 {
     // Implement your code here
-    if (width >= 0)
+    if (width > 0)
         m_width = width;
 
-    if (height >= 0)
+    if (height > 0)
         m_height = height;
 
     m_board = new Candy**[m_height];
@@ -53,9 +53,11 @@ void Board::clear()
 bool Board::clearAndResize(int width, int height)
 {
     bool canResize = width > 0 && height > 0;
-    clear();
     if (canResize)
     {
+        clear();
+        m_width = width;
+        m_height = height;
         m_board = new Candy**[m_height];
         for (int y = 0; y < m_height; y++)
         {
@@ -63,8 +65,6 @@ bool Board::clearAndResize(int width, int height)
             for (int x = 0; x < m_width; x++)
                 m_board[y][x] = nullptr;
         }
-        m_width = width;
-        m_height = height;
     }
     return canResize;
 }
@@ -242,6 +242,10 @@ std::vector<Candy*> Board::explodeAndDrop()
             }
         }
     } while (explosion);
+
+    for (Candy* explodedCandy : exploded)
+        delete explodedCandy;
+
     return exploded;
 }
 
@@ -293,15 +297,20 @@ bool Board::load(const std::string& input_path)
     if (!file.is_open())
         return false;
 
-    char charCandy;
     int width, height;
     file >> width >> height;
-    clearAndResize(width, height);
-    for (int y = 0; y < m_height; y++)
+    if(!clearAndResize(width, height))
     {
-        for (int x = 0; x < m_width; x++)
+        file.close();
+        return false;
+    }
+
+    char charCandy;
+    CandyType type;
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
         {
-            CandyType type;
             file >> charCandy;
             switch (charCandy)
             {
