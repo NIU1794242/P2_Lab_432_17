@@ -2,7 +2,6 @@
 #include <memory>
 #include <iostream>
 
-
 Board::Board(int width, int height) : m_width(DEFAULT_BOARD_WIDTH), m_height(DEFAULT_BOARD_HEIGHT),
 m_candyRed(CandyType::TYPE_RED), m_candyGreen(CandyType::TYPE_GREEN), m_candyBlue(CandyType::TYPE_BLUE), 
 m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_candyOrange(CandyType::TYPE_ORANGE)
@@ -14,20 +13,72 @@ m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_
     if (height >= 0)
         m_height = height;
 
-    m_board.resize(m_height, std::vector<Candy*>(m_width, nullptr));
+    m_board = new Candy**[m_height];
+    for (int y = 0; y < m_height; y++)
+    {
+        m_board[y] = new Candy*[m_width];
+        for (int x = 0; x < m_width; x++)
+            m_board[y][x] = nullptr;
+    }
 }
 
 Board::~Board()
 {
     // Implement your code here
-    m_board.clear();
+    clear();        
+}
+
+void Board::clear()
+{
+    if (m_board != nullptr)
+    {
+        for (int y = 0; y < m_height; y++)
+        {
+            if (m_board[y] != nullptr)
+            {
+                for (int x = 0; x < m_width; x++)
+                    if (m_board[y][x] != nullptr)
+                        delete m_board[y][x];
+
+                delete[] m_board[y];
+            }
+        }
+        delete[] m_board;
+    }
+    m_board = nullptr;
+    m_width = 0;
+    m_height = 0;
+}
+
+bool Board::clearAndResize(int width, int height)
+{
+    bool canResize = width > 0 && height > 0;
+    clear();
+    if (canResize)
+    {
+        m_board = new Candy**[m_height];
+        for (int y = 0; y < m_height; y++)
+        {
+            m_board[y] = new Candy*[m_width];
+            for (int x = 0; x < m_width; x++)
+                m_board[y][x] = nullptr;
+        }
+        m_width = width;
+        m_height = height;
+    }
+    return canResize;
+}
+
+bool Board::isValidPosition(int x, int y) const
+{
+    return x >= 0 && x < m_width && y >= 0 && y < m_height;
 }
 
 Candy* Board::getCell(int x, int y) const
 {
     // Implement your code here
     Candy* cell = nullptr;
-    if (x >= 0 && x < m_width && y >= 0 && y < m_height)
+    if (isValidPosition(x, y))
         cell = m_board[y][x];
     return cell;
 }
@@ -35,7 +86,7 @@ Candy* Board::getCell(int x, int y) const
 void Board::setCell(Candy* candy, int x, int y)
 {
     // Implement your code here
-    if (x >= 0 && x < m_width && y >= 0 && y < m_height)
+    if (isValidPosition(x, y))
         m_board[y][x] = candy;
 }
 
@@ -50,86 +101,96 @@ int Board::getHeight() const
     // Implement your code here
     return m_height;
 }
-
+// Transformar en funciones
 bool Board::shouldExplode(int x, int y) const
 {
     bool explode = false;
     
-    if (x >= 0 && x < m_width && y >= 0 && y < m_height && m_board[y][x] != nullptr)
+    if (isValidPosition(x, y) && m_board[y][x] != nullptr)
     {
         CandyType type = m_board[y][x]->getType();
-        int count = 1;
-        int steps = 1;
-        // N/S
-        while (y + steps < m_height && m_board[y + steps][x] != nullptr && m_board[y + steps][x]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-        {
-            count++;
-            steps++;
-        }
-        steps = 1;
-        while (y - steps >= 0 && m_board[y - steps][x] != nullptr && m_board[y - steps][x]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-        {
-            count++;
-            steps++;
-        }
-        explode = count >= SHORTEST_EXPLOSION_LINE;
-        // E/W
+        
+        explode = shouldExplodeVertical(x, y, type);
         if (!explode)
-        {
-
-            count = 1;
-            steps = 1;
-            while (x + steps < m_width && m_board[y][x + steps] != nullptr && m_board[y][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-            {
-                count++;
-                steps++;
-            }
-            steps = 1;
-            while (x - steps >= 0 && m_board[y][x - steps] != nullptr && m_board[y][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-            {
-                count++;
-                steps++;
-            }
-            explode = count >= SHORTEST_EXPLOSION_LINE;
-        }
-        // NE/SW
+            explode = shouldExplodeHorizontal(x, y, type);
         if (!explode)
-        {
-            count = 1;
-            steps = 1;
-            while (y + steps < m_height && x + steps < m_width && m_board[y + steps][x + steps] != nullptr && m_board[y + steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-            {
-                count++;
-                steps++;
-            }
-            steps = 1;
-            while (y - steps >= 0 && x - steps >= 0 && m_board[y - steps][x - steps] != nullptr && m_board[y - steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-            {
-                count++;
-                steps++;
-            }
-            explode = count >= SHORTEST_EXPLOSION_LINE;
-        }
-        // NW/SE
-        if(!explode)
-        {
-            count = 1;
-            steps = 1;
-            while (y + steps < m_height && x - steps >= 0 && m_board[y + steps][x - steps] != nullptr && m_board[y + steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-            {
-                count++;
-                steps++;
-            }
-            steps = 1;
-            while (y - steps >= 0 && x + steps < m_width && m_board[y - steps][x + steps]  != nullptr && m_board[y - steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
-            {
-                count++;
-                steps++;
-            }
-            explode = count >= SHORTEST_EXPLOSION_LINE;
-        }
+            explode = shouldExplodeDiagonalDownTop(x, y, type);
+        if (!explode)
+            explode = shouldExplodeDiagonalTopDown(x, y, type);
     }
     return explode;
+}
+
+bool Board::shouldExplodeVertical(int x, int y, CandyType type) const
+{
+    int count = 1;
+    int steps = 1;
+    while (y + steps < m_height && m_board[y + steps][x] != nullptr && m_board[y + steps][x]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    steps = 1;
+    while (y - steps >= 0 && m_board[y - steps][x] != nullptr && m_board[y - steps][x]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    return count >= SHORTEST_EXPLOSION_LINE;
+}
+
+bool Board::shouldExplodeHorizontal(int x, int y, CandyType type) const
+{
+    int count = 1;
+    int steps = 1;
+    while (x + steps < m_width && m_board[y][x + steps] != nullptr && m_board[y][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    steps = 1;
+    while (x - steps >= 0 && m_board[y][x - steps] != nullptr && m_board[y][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    return count >= SHORTEST_EXPLOSION_LINE;
+}
+
+bool Board::shouldExplodeDiagonalTopDown(int x, int y, CandyType type) const
+{
+    int count = 1;
+    int steps = 1;
+    while (y + steps < m_height && x + steps < m_width && m_board[y + steps][x + steps] != nullptr && m_board[y + steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    steps = 1;
+    while (y - steps >= 0 && x - steps >= 0 && m_board[y - steps][x - steps] != nullptr && m_board[y - steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    return count >= SHORTEST_EXPLOSION_LINE;
+}
+
+bool Board::shouldExplodeDiagonalDownTop(int x, int y, CandyType type) const
+{
+    int count = 1;
+    int steps = 1;
+    while (y + steps < m_height && x - steps >= 0 && m_board[y + steps][x - steps] != nullptr && m_board[y + steps][x - steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    steps = 1;
+    while (y - steps >= 0 && x + steps < m_width && m_board[y - steps][x + steps] != nullptr && m_board[y - steps][x + steps]->getType() == type && count < SHORTEST_EXPLOSION_LINE)
+    {
+        count++;
+        steps++;
+    }
+    return count >= SHORTEST_EXPLOSION_LINE;
 }
 
 std::vector<Candy*> Board::explodeAndDrop()
@@ -140,28 +201,44 @@ std::vector<Candy*> Board::explodeAndDrop()
     bool explosion = false;
     do
     {
+        // deteccion/marca de explosiones
+        explosion = false;
         for (int y = 0; y < m_height; y++)
             for (int x = 0; x < m_width; x++)
                 toExplode[y][x] = shouldExplode(x, y);
+
+        // eliminar (explotar) candy marcados
         for (int y = 0; y < m_height; y++)
             for (int x = 0; x < m_width; x++)
                 if (toExplode[y][x])
                 {
                     explosion = true;
                     exploded.push_back(m_board[y][x]);
-                    m_board[y][x] = nullptr;
+                    setCell(nullptr, x, y);
                 }
-        for (int x = 0; x < m_width; x++)
+
+        // hacer caer los candy
+        if (explosion)
         {
-            int y = m_height - 1;
-            int shift = 0;
-            while (y-shift >= 0)
+            for (int x = 0; x < m_width; x++)
             {
-                while (y - shift >= 0 && m_board[y][x] == nullptr)
-                    shift++;
-                if (y - shift >= 0)
-                    m_board[y][x] = m_board[y - shift][x];
-                y--;
+                int y = m_height - 1;
+                int shift = 0;
+                while (y-shift >= 0)
+                {
+                    while (y - shift >= 0 && m_board[y-shift][x] == nullptr)
+                        shift++;
+                    if (y - shift >= 0)
+                    {
+                        m_board[y][x] = m_board[y - shift][x];
+                        y--;
+                    }
+                }
+                while (y >= 0)
+                {
+                    setCell(nullptr, x, y);
+                    y--;
+                }
             }
         }
     } while (explosion);
@@ -175,6 +252,7 @@ bool Board::dump(const std::string& output_path) const
     file.open(output_path);
     if (!file.is_open())
         return false;
+
 
     file << m_width << ' ' << m_height << std::endl;
     for (int y = 0; y < m_height; y++)
@@ -216,24 +294,27 @@ bool Board::load(const std::string& input_path)
         return false;
 
     char charCandy;
-    
-    file >> m_width >> m_height;
-    m_board.resize(m_height, std::vector<Candy*>(m_width));
+    int width, height;
+    file >> width >> height;
+    clearAndResize(width, height);
     for (int y = 0; y < m_height; y++)
     {
         for (int x = 0; x < m_width; x++)
         {
+            CandyType type;
             file >> charCandy;
             switch (charCandy)
             {
-            case 'R': setCell(&m_candyRed, x, y); break;
-            case 'G': setCell(&m_candyGreen, x, y); break;
-            case 'B': setCell(&m_candyBlue, x, y); break;
-            case 'Y': setCell(&m_candyYellow, x, y); break;
-            case 'P': setCell(&m_candyPurple, x, y); break;
-            case 'O': setCell(&m_candyOrange, x, y); break;
-            default: setCell(nullptr, x, y); break;
+            case 'R': type = CandyType::TYPE_RED; break;
+            case 'G': type = CandyType::TYPE_GREEN; break;
+            case 'B': type = CandyType::TYPE_BLUE; break;
+            case 'Y': type = CandyType::TYPE_YELLOW; break;
+            case 'P': type = CandyType::TYPE_PURPLE; break;
+            case 'O': type = CandyType::TYPE_ORANGE; break;
+            default: type = CandyType::COUNT; break;
             }
+            Candy* newCandy = type != CandyType::COUNT ? new Candy(type) : nullptr;
+            setCell(newCandy, x, y);
         }
     }
 

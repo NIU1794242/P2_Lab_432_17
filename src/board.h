@@ -90,7 +90,7 @@ public:
 
 
 private:
-    std::vector<std::vector<Candy*>> m_board;
+    Candy*** m_board;
     int m_height;
     int m_width;
     Candy m_candyRed;
@@ -99,6 +99,13 @@ private:
     Candy m_candyYellow;
     Candy m_candyPurple;
     Candy m_candyOrange;
+    bool isValidPosition(int x, int y) const;
+    bool shouldExplodeVertical(int x, int y, CandyType type) const;
+    bool shouldExplodeHorizontal(int x, int y, CandyType type) const;
+    bool shouldExplodeDiagonalTopDown(int x, int y, CandyType type) const;
+    bool shouldExplodeDiagonalDownTop(int x, int y, CandyType type) const;
+    void clear();
+    bool clearAndResize(int width, int height);
     /// Students can add as many protected methods and attributes as needed.
 };
 
