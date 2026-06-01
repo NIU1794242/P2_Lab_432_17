@@ -1,13 +1,7 @@
- magick blue_orb_definitive1.png -strip PNG24:blue_orb_definitive1.png
- magick golden_orb_definitive1.png -strip PNG24:golden_orb_definitive1.png
- magick green_orb_definitive1.png -strip PNG24:green_orb_definitive1.png
- magick orange_orb_definitive1.png -strip PNG24:orange_orb_definitive1.png
- magick purple_orb_definitive1.png -strip PNG24:purple_orb_definitive1.png
- magick red_orb_definitive1.png -strip PNG24:red_orb_definitive1.png
 
- magick blue_orb_definitive.png -strip PNG24:blue_orb_definitive.png
- magick golden_orb_definitive.png -strip PNG24:golden_orb_definitive.png
- magick green_orb_definitive.png -strip PNG24:green_orb_definitive.png
- magick orange_orb_definitive.png -strip PNG24:orange_orb_definitive.png
- magick purple_orb_definitive.png -strip PNG24:purple_orb_definitive.png
- magick red_orb_definitive.png -strip PNG24:red_orb_definitive.png
+magick blue_orb_definitive1.png -strip PNG32:blue_orb_definitive1.png
+magick golden_orb_definitive1.png -strip PNG32:golden_orb_definitive1.png
+magick green_orb_definitive1.png -strip PNG32:green_orb_definitive1.png
+magick orange_orb_definitive1.png -strip PNG32:orange_orb_definitive1.png
+magick red_orb_definitive1.png -strip PNG32:red_orb_definitive1.png
+magick purple_orb_definitive1.png -strip PNG32:purple_orb_definitive1.png
