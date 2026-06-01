@@ -19,22 +19,22 @@ std::string Candy::getResourceName() const
     switch (m_type)
     {
     case CandyType::TYPE_RED:
-        candy_resource_name = candy_resource_prefix + "red.png";
+        candy_resource_name = candy_resource_prefix + "red_orb_definitive1.png";
         break;
     case CandyType::TYPE_GREEN:
-        candy_resource_name = candy_resource_prefix + "green.png";
+        candy_resource_name = candy_resource_prefix + "green_orb_definitive1.png"; //ok
         break;
     case CandyType::TYPE_BLUE:
-        candy_resource_name = candy_resource_prefix + "blue.png";
+        candy_resource_name = candy_resource_prefix + "blue_orb_definitive1.png";
         break;
     case CandyType::TYPE_YELLOW:
-        candy_resource_name = candy_resource_prefix + "yellow.png";
+        candy_resource_name = candy_resource_prefix + "golden_orb_definitive1.png"; //ok
         break;
     case CandyType::TYPE_PURPLE:
-        candy_resource_name = candy_resource_prefix + "purple.png";
+        candy_resource_name = candy_resource_prefix + "purple_orb_definitive1.png"; //ok
         break;
     case CandyType::TYPE_ORANGE:
-        candy_resource_name = candy_resource_prefix + "orange.png";
+        candy_resource_name = candy_resource_prefix + "orange_orb_definitive1.png"; //ok
         break;
     default:
         std::cout << "Invalid candy type. aborting" << std::endl;
