@@ -87,7 +87,11 @@ void Board::setCell(Candy* candy, int x, int y)
 {
     // Implement your code here
     if (isValidPosition(x, y))
-        m_board[y][x] = candy;
+    {
+        if (m_board[y][x] != nullptr)
+            delete m_board[y][x];
+        m_board[y][x] = candy != nullptr ? new Candy(candy->getType()) : nullptr;
+    }
 }
 
 int Board::getWidth() const
@@ -236,15 +240,12 @@ std::vector<Candy*> Board::explodeAndDrop()
                 }
                 while (y >= 0)
                 {
-                    setCell(nullptr, x, y);
+                    m_board[y][x] = nullptr;
                     y--;
                 }
             }
         }
     } while (explosion);
-
-    for (Candy* explodedCandy : exploded)
-        delete explodedCandy;
 
     return exploded;
 }
