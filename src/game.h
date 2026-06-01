@@ -1,17 +1,21 @@
+#pragma once
 /**
- * Game logic and rendering implementation. 
+ * Game logic and rendering implementation.
  */
 #ifndef GAME_H
 #define GAME_H
 
 #include "graphics.h"
 #include "controller.h"
+#include "board.h"
+#include "candy.h"
+#include <string>
 
-/**
- * Main game class: keep track of the game state it. 
- * When run_graphic_game() is called, the game loop will call
- * update() and render() every frame, in that order.
- */
+ /**
+  * Main game class: keep track of the game state it.
+  * When run_graphic_game() is called, the game loop will call
+  * update() and render() every frame, in that order.
+  */
 class Game
 {
 public:
@@ -25,14 +29,14 @@ public:
     /**
      * Update the game state. Called every frame when run().
      * This part is not expected to do any rendering.
-     * 
+     *
      * @param controller the Controller to use for input handling.
      */
     void update(const Controller& controller);
 
     /**
      * Draw the next frame. Called once per frame, after update().
-     * 
+     *
      * @param graphics the GraphicManager to use for rendering.
      */
     void render(GraphicManager& graphics);
@@ -53,5 +57,27 @@ public:
 
     /// @return true if this game is equal to the other game (same board state and falling block)
     bool operator==(const Game& other) const;
+
+private:
+    static const int BLOCK_SIZE = 3;
+    static const int SPAWN_COLUMN = 5;      // 6a columna (empezando en 0)
+    static const int FRAMES_PER_DROP = 60;  // baja 1 vez por segundo 60 fps
+
+    Board* m_board;
+    Candy* m_block[BLOCK_SIZE];  // 0 = arriba, 2 = abajo; nullptr si no hay
+    int m_blockX;                // columna del bloque
+    int m_blockY;                // fila del caramelo de ARRIBA (puede ser negativa)
+    int m_frameCounter;
+    bool m_gameOver;
+    int m_score;
+
+
+    // Helpers
+    void spawnBlock();
+    void freeBlock();
+    bool canMoveTo(int newX, int newY) const;  // can block occupy (newX, newY..+2)?
+    void rotateBlock();
+    void landBlock();
+    void resolveExplosions();
 };
 #endif
