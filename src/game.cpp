@@ -47,7 +47,7 @@ Game::Game()
     m_blockY = -BLOCK_SIZE;
     m_frameCounter = 0;
     m_gameOver = false;
-    m_score = 55; //SCORE
+    m_score = 0; //SCORE
 
     for (int i = 0; i < BLOCK_SIZE; ++i)
         m_block[i] = nullptr;
