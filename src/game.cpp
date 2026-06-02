@@ -6,6 +6,21 @@
 #include <fstream>
 #include <cstdlib>   // rand, srand
 #include <ctime>     // time
+#include "sound.h"
+
+// Carga un efecto de sonido por nombre, relativo a data/img/Audios/
+static T_SOUND* cargarSonido(const std::string& nombre)
+{
+    std::string full = getDataDirPath() + "img/Audios/" + nombre;
+    return Sound_LoadSound(&full[0]);   // Sound_LoadSound pide char*
+}
+
+// Carga y arranca una OST (música en streaming)
+static T_SOUND* cargarMusica(const std::string& nombre)
+{
+    std::string full = getDataDirPath() + "img/Audios/" + nombre;
+    return Sound_LoadMusic(&full[0], PLAY_FROM_DISK_STREAM);
+}
 
 
 Game::Game()
@@ -114,7 +129,8 @@ void Game::landBlock()
 void Game::resolveExplosions()
 {
     std::vector<Candy*> explotados = m_board->explodeAndDrop();
-    m_score += (int)explotados.size();
+    const int PUNTOS_POR_CARAMELO = 2;   //IMPORTANTE MODIFICAR ESTO ANTES DE ENTREGA
+    m_score += (int)explotados.size() * PUNTOS_POR_CARAMELO;
 
     // NO borramos nada: el Board ya ha borrado estos caramelos
     // dentro de explodeAndDrop (con setCell(nullptr, ...)).
@@ -124,6 +140,10 @@ void Game::resolveExplosions()
 //          ---Bucle del juego---
 void Game::update(const Controller& controller)
 {
+
+    initSound();             // se inicializa una sola vez (primer frame)
+    updateSoundForScore();   // dispara rangos y cambia la OST
+
     if (m_gameOver)
         return;
 
@@ -155,7 +175,7 @@ void Game::update(const Controller& controller)
     }
 }
 
-void Game::render(GraphicManager& graphics) //wtf que es esto?
+void Game::render(GraphicManager& graphics) 
 {
     int pad = 3;
     int originX = CANDY_IMAGE_WIDTH * pad;
@@ -197,11 +217,11 @@ void Game::render(GraphicManager& graphics) //wtf que es esto?
         25, 700, 20, 100, 100, 100);
 }
 
-void Game::run() //wtf que es esto?
+void Game::run() 
 {
     const int screen_width = 750;
     const int screen_height = 750;
-    runGraphicGame(*this, screen_width, screen_height, 255, 255, 0);
+    runGraphicGame(*this, screen_width, screen_height, 255, 255, 255);
 }
 
 bool Game::dump(const std::string& output_path) const
@@ -329,4 +349,56 @@ bool Game::operator==(const Game& other) const
         return false;
 
     return true;
+}
+
+void Game::initSound()
+{
+    if (m_soundReady) return;
+    m_soundReady = true;          // lo marcamos ya, para no reintentar
+
+    Sound_Init();                 // ¡UNA sola vez en todo el programa!
+
+    // Sonidos de rango (índices 1..7 = D..SSS)
+    const char* nombres[8] = { nullptr, "D", "C", "B", "A", "S", "SS", "SSS" };
+    for (int r = 1; r <= 7; ++r)
+        m_rankSounds[r] = cargarSonido(std::string(nombres[r]) + ".ogg");
+
+    // OST inicial: Devil_Trigger empieza a sonar al cargarse
+    m_ostDevil = cargarMusica("Devil_Trigger.ogg");
+    m_lastOst = 0;
+}
+
+int Game::rankFromScore(int score) const
+{
+    if (score >= 100) return 7;   // SSS
+    if (score >= 80)  return 6;   // SS
+    if (score >= 60)  return 5;   // S
+    if (score >= 40)  return 4;   // A
+    if (score >= 30)  return 3;   // B
+    if (score >= 20)  return 2;   // C
+    if (score >= 10)  return 1;   // D
+    return 0;                     // sin rango
+}
+
+void Game::updateSoundForScore()
+{
+    if (!m_soundReady) return;
+
+    // Sonido de rango: SOLO cuando subimos de rango
+    int rank = rankFromScore(m_score);
+    if (rank > m_lastRank && m_rankSounds[rank] != nullptr)
+        Sound_Play(m_rankSounds[rank], SOUND_PLAY_NORMAL);
+    m_lastRank = rank;
+
+    // OST según puntuación: Devil (0), Silver (>=60), Bury (>=90)
+    int ost = 0;
+    if (m_score >= 90) ost = 2;
+    else if (m_score >= 60) ost = 1;
+
+    if (ost != m_lastOst)
+    {
+        if (ost == 1)      m_ostSilver = cargarMusica("Silver_Bullet.ogg");
+        else if (ost == 2) m_ostBury = cargarMusica("Bury_the_Light.ogg");
+        m_lastOst = ost;
+    }
 }

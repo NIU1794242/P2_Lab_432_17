@@ -11,6 +11,8 @@
 #include "candy.h"
 #include <string>
 
+struct T_SOUND;
+
  /**
   * Main game class: keep track of the game state it.
   * When run_graphic_game() is called, the game loop will call
@@ -71,6 +73,14 @@ private:
     bool m_gameOver;
     int m_score;
 
+    // --- Sonido (rangos + OST) ---
+    bool m_soundReady = false;
+    int  m_lastRank = 0;     // 0 = sin rango, 1..7 = D,C,B,A,S,SS,SSS
+    int  m_lastOst = -1;    // 0 = Devil, 1 = Silver, 2 = Bury
+    T_SOUND* m_rankSounds[8] = { nullptr };  // usamos índices 1..7
+    T_SOUND* m_ostDevil = nullptr;
+    T_SOUND* m_ostSilver = nullptr;
+    T_SOUND* m_ostBury = nullptr;
 
     // Helpers
     void spawnBlock();
@@ -79,5 +89,9 @@ private:
     void rotateBlock();
     void landBlock();
     void resolveExplosions();
+
+    void initSound();
+    int  rankFromScore(int score) const;
+    void updateSoundForScore();
 };
 #endif

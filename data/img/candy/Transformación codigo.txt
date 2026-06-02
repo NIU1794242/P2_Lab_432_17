@@ -5,3 +5,11 @@ magick green_orb_definitive1.png -strip PNG32:green_orb_definitive1.png
 magick orange_orb_definitive1.png -strip PNG32:orange_orb_definitive1.png
 magick red_orb_definitive1.png -strip PNG32:red_orb_definitive1.png
 magick purple_orb_definitive1.png -strip PNG32:purple_orb_definitive1.png
+
+magick D.png -strip PNG32:D.png
+magick C.png -strip PNG32:C.png
+magick B.png -strip PNG32:B.png
+magick A.png -strip PNG32:A.png
+magick S.png -strip PNG32:S.png
+magick SS.png -strip PNG32:SS.png
+magick SSS.png -strip PNG32:SSS.png

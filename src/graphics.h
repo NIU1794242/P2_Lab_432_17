@@ -95,7 +95,7 @@ void runGraphicGame(GameClass& game, int screenWidth, int screenHeight,
 {
     // Ensure SDL is ready and main can be set by the library
     SDL_SetMainReady();
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
     Screen screen(screenWidth, screenHeight, bgRed, bgGreen, bgBlue);
     GraphicManager& graphicManager = *GraphicManager::get_instance();
