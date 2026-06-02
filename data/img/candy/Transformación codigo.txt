@@ -13,3 +13,5 @@ magick A.png -strip PNG32:A.png
 magick S.png -strip PNG32:S.png
 magick SS.png -strip PNG32:SS.png
 magick SSS.png -strip PNG32:SSS.png
+
+magick fondo.png -strip PNG32:fondo.png

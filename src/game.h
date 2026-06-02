@@ -81,6 +81,8 @@ private:
     T_SOUND* m_ostDevil = nullptr;
     T_SOUND* m_ostSilver = nullptr;
     T_SOUND* m_ostBury = nullptr;
+    T_SOUND* m_sndExplode = nullptr;
+    T_SOUND* m_sndGameOver = nullptr;
 
     // Helpers
     void spawnBlock();
@@ -93,5 +95,7 @@ private:
     void initSound();
     int  rankFromScore(int score) const;
     void updateSoundForScore();
+    void drawRank(GraphicManager& graphics, int x, int y) const;
+    void drawEasterEgg(GraphicManager& graphics, int x, int y) const;
 };
 #endif

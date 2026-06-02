@@ -22,6 +22,21 @@ static T_SOUND* cargarMusica(const std::string& nombre)
     return Sound_LoadMusic(&full[0], PLAY_FROM_DISK_STREAM);
 }
 
+//ARREGLAMOS SONIDOS ORBES QUE SE PIERDE
+// Existen en sound.cpp pero no están en sound.h; las declaramos para usarlas.
+extern void Sound_Lock();
+extern void Sound_Unlock();
+
+// Reproduce un efecto protegiendo la lista de canales frente al hilo de audio
+static int reproducirEfecto(T_SOUND* s, int mode)
+{
+    if (s == nullptr) return -1;
+    Sound_Lock();
+    int slot = Sound_Play(s, mode);   // el lock de SDL es recursivo, no pasa nada
+    Sound_Unlock();
+    return slot;
+}
+
 
 Game::Game()
 {
@@ -32,7 +47,7 @@ Game::Game()
     m_blockY = -BLOCK_SIZE;
     m_frameCounter = 0;
     m_gameOver = false;
-    m_score = 0;
+    m_score = 55; //SCORE
 
     for (int i = 0; i < BLOCK_SIZE; ++i)
         m_block[i] = nullptr;
@@ -40,7 +55,7 @@ Game::Game()
     spawnBlock();
 }
 
-Game::~Game() //PUEDE SER QUE EL PROGRAMA SE RALLE CON LOS DELETES
+Game::~Game() 
 {
     freeBlock();     // borra los caramelos del bloque que aún tengamos
     delete m_board;  // el destructor de Board borra los de las celdas
@@ -107,30 +122,40 @@ bool Game::canMoveTo(int newX, int newY) const
 
 void Game::landBlock()
 {
-    // Si la parte de arriba está fuera del tablero, no cabe -> fin del juego
-    if (m_blockY < 0)
-    {
-        m_gameOver = true;
-        return;  // los caramelos del bloque se borran en el destructor
-    }
-
-    // Congelamos el bloque en el tablero (ahora los caramelos son del Board)
+    // Colocamos en el tablero los caramelos que caben (filas >= 0).
+    // Los que quedan por encima del tablero se descartan (overflow).
     for (int i = 0; i < BLOCK_SIZE; ++i)
     {
-        m_board->setCell(m_block[i], m_blockX, m_blockY + i);  // el Board copia
-        delete m_block[i];                                     // borras tu original
+        m_board->setCell(m_block[i], m_blockX, m_blockY + i);  // ignora filas < 0
+        delete m_block[i];
         m_block[i] = nullptr;
     }
 
+    // Primero explotamos: puede despejar la columna y "salvar" la partida
     resolveExplosions();
+
+    // Game over solo si el bloque desbordó por arriba Y, tras explotar,
+    // la cima de esa columna SIGUE ocupada (no hubo hueco).
+    if (m_blockY < 0 && m_board->getCell(m_blockX, 0) != nullptr)
+    {
+        m_gameOver = true;
+        if (m_soundReady && m_sndGameOver != nullptr)
+            reproducirEfecto(m_sndGameOver, SOUND_PLAY_NORMAL);
+        return;
+    }
+
     spawnBlock();
 }
 
 void Game::resolveExplosions()
 {
     std::vector<Candy*> explotados = m_board->explodeAndDrop();
-    const int PUNTOS_POR_CARAMELO = 2;   //IMPORTANTE MODIFICAR ESTO ANTES DE ENTREGA
+    const int PUNTOS_POR_CARAMELO = 1;   //IMPORTANTE MODIFICAR ESTO ANTES DE ENTREGA
     m_score += (int)explotados.size() * PUNTOS_POR_CARAMELO;
+
+    // Sonido al explotar candys
+    if (!explotados.empty() && m_soundReady && m_sndExplode != nullptr)
+        reproducirEfecto(m_sndExplode, SOUND_PLAY_NORMAL);
 
     // NO borramos nada: el Board ya ha borrado estos caramelos
     // dentro de explodeAndDrop (con setCell(nullptr, ...)).
@@ -183,6 +208,9 @@ void Game::render(GraphicManager& graphics)
     int w = m_board->getWidth();
     int h = m_board->getHeight();
 
+    graphics.drawImage("img/candy/fondo.png", 0, 0);
+    drawEasterEgg(graphics, 225, -14);   
+
     // Borde del tablero
     graphics.drawRectangle(originX, originY,
         CANDY_IMAGE_WIDTH * w, CANDY_IMAGE_HEIGHT * h,
@@ -210,11 +238,16 @@ void Game::render(GraphicManager& graphics)
     // Textos
     graphics.drawImage("img/logo_small.png", 10, 10);
     if (m_gameOver)
-        graphics.drawText("GAME OVER", 25, 25, 40, 240, 130, 130);
+        graphics.drawText("GAME OVER", 265, 315, 40, 240, 130, 130);
     graphics.drawText("Score: " + std::to_string(m_score), 450, 10, 40, 125, 200, 125);
     graphics.drawText("Movement: [Up] [Down] [Left] [Right]  --  "
         "Buttons: [Q] [W] [E]  --  Exit [ESC]",
         25, 700, 20, 100, 100, 100);
+    graphics.drawText("Devil May Cry 5 Edition", 25, 645, 30, 100, 100, 100);
+
+    //Dibujar Rangos
+    graphics.drawText("Score: " + std::to_string(m_score), 450, 10, 40, 230, 230, 230);
+    drawRank(graphics, 620, 60);   // Dibujar rango x, y
 }
 
 void Game::run() 
@@ -363,6 +396,9 @@ void Game::initSound()
     for (int r = 1; r <= 7; ++r)
         m_rankSounds[r] = cargarSonido(std::string(nombres[r]) + ".ogg");
 
+    m_sndExplode = cargarSonido("orbs_def.ogg");
+    m_sndGameOver = cargarSonido("Pathetic.ogg");
+
     // OST inicial: Devil_Trigger empieza a sonar al cargarse
     m_ostDevil = cargarMusica("Devil_Trigger.ogg");
     m_lastOst = 0;
@@ -370,8 +406,8 @@ void Game::initSound()
 
 int Game::rankFromScore(int score) const
 {
-    if (score >= 100) return 7;   // SSS
-    if (score >= 80)  return 6;   // SS
+    if (score >= 200) return 7;   // SSS
+    if (score >= 100)  return 6;   // SS
     if (score >= 60)  return 5;   // S
     if (score >= 40)  return 4;   // A
     if (score >= 30)  return 3;   // B
@@ -387,12 +423,12 @@ void Game::updateSoundForScore()
     // Sonido de rango: SOLO cuando subimos de rango
     int rank = rankFromScore(m_score);
     if (rank > m_lastRank && m_rankSounds[rank] != nullptr)
-        Sound_Play(m_rankSounds[rank], SOUND_PLAY_NORMAL);
+        reproducirEfecto(m_rankSounds[rank], SOUND_PLAY_NORMAL);
     m_lastRank = rank;
 
     // OST según puntuación: Devil (0), Silver (>=60), Bury (>=90)
     int ost = 0;
-    if (m_score >= 90) ost = 2;
+    if (m_score >= 140) ost = 2;
     else if (m_score >= 60) ost = 1;
 
     if (ost != m_lastOst)
@@ -401,4 +437,23 @@ void Game::updateSoundForScore()
         else if (ost == 2) m_ostBury = cargarMusica("Bury_the_Light.ogg");
         m_lastOst = ost;
     }
+}
+// Carpeta de los PNG de las letras de rango: la MISMA que los candys.
+// Ajústala si tus candys están en otra carpeta (ver nota abajo).
+static const std::string RANK_IMG_DIR = "img/candy/";
+
+void Game::drawRank(GraphicManager& graphics, int x, int y) const
+{
+    int rank = rankFromScore(m_score);
+    if (rank == 0) return;   // todavía sin rango (score < 10): no dibujamos nada
+
+    const char* letras[8] = { "", "D", "C", "B", "A", "S", "SS", "SSS" };
+    std::string resource = RANK_IMG_DIR + letras[rank] + ".png";
+    graphics.drawImage(resource, x, y);
+}
+
+void Game::drawEasterEgg(GraphicManager& graphics, int x, int y) const
+{
+    if (rankFromScore(m_score) == 7)   // 7 = SSS (score >= 100)
+        graphics.drawImage(RANK_IMG_DIR + "Vergil_def.png", x, y);
 }
