@@ -64,6 +64,7 @@ private:
     static const int BLOCK_SIZE = 3;
     static const int SPAWN_COLUMN = 5;      // 6a columna (empezando en 0)
     static const int FRAMES_PER_DROP = 60;  // baja 1 vez por segundo 60 fps
+    static const int DIFFICULTY = 200;      // cuanto mas cerca de 0 mayor la difficultad
 
     Board* m_board;
     Candy* m_block[BLOCK_SIZE];  // 0 = arriba, 2 = abajo; nullptr si no hay
@@ -72,6 +73,7 @@ private:
     int m_frameCounter;
     bool m_gameOver;
     int m_score;
+    bool hardMode;
 
     // --- Sonido (rangos + OST) ---
     bool m_soundReady = false;

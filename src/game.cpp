@@ -48,6 +48,7 @@ Game::Game()
     m_frameCounter = 0;
     m_gameOver = false;
     m_score = 0; //SCORE
+    hardMode = false;
 
     for (int i = 0; i < BLOCK_SIZE; ++i)
         m_block[i] = nullptr;
@@ -171,6 +172,9 @@ void Game::update(const Controller& controller)
     if (m_gameOver)
         return;
 
+    if (controller.isKey4Pressed())
+        hardMode = !hardMode;
+
     // Mover a izquierda / derecha
     if (controller.isLeftPressed() && canMoveTo(m_blockX - 1, m_blockY))
         m_blockX = m_blockX - 1;
@@ -187,7 +191,7 @@ void Game::update(const Controller& controller)
 
     // Bajar: 1 vez cada 60 frames, o ya mismo si pulsas Abajo
     m_frameCounter = m_frameCounter + 1;
-    bool bajar = (m_frameCounter >= FRAMES_PER_DROP) || controller.isDownPressed();
+    bool bajar = (m_frameCounter >= (int)((float)FRAMES_PER_DROP/(1.0+(float)hardMode * (float)m_score/DIFFICULTY)) || controller.isDownPressed());
     if (controller.isSpacePressed())
     {
         while (canMoveTo(m_blockX, m_blockY + 1))
@@ -212,7 +216,12 @@ void Game::render(GraphicManager& graphics)
     int w = m_board->getWidth();
     int h = m_board->getHeight();
 
-    graphics.drawImage("img/candy/fondo.png", 0, 0);
+    string fondo;
+    if (!hardMode)
+        fondo = "img/candy/fondo.png";
+    else
+        fondo = "img/candy/fondo_hard_mode.png";
+    graphics.drawImage(fondo , 0, 0);
     drawEasterEgg(graphics, 225, -14);   
 
     // Borde del tablero
@@ -247,7 +256,8 @@ void Game::render(GraphicManager& graphics)
     graphics.drawText("Movement: [Up] [Down] [Left] [Right]  --  "
         "Buttons: [Q] [W] [E]  --  Exit [ESC]",
         25, 700, 20, 100, 100, 100);
-    graphics.drawText("Devil May Cry 5 Edition", 25, 645, 30, 100, 100, 100);
+    graphics.drawText("Hard Drop: [SPACE]  --  Alternate Hard Mode: [V]", 25, 678, 20, 100, 100, 100);
+    graphics.drawText("Devil May Cry 5 Edition", 25, 640, 30, 100, 100, 100);
 
     //Dibujar Rangos
     graphics.drawText("Score: " + std::to_string(m_score), 450, 10, 40, 230, 230, 230);

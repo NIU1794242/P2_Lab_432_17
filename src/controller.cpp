@@ -22,6 +22,7 @@ Controller::Controller()
     m_map[KEY1] = KEYBOARD_Q;
     m_map[KEY2] = KEYBOARD_W;
     m_map[KEY3] = KEYBOARD_E;
+    m_map[KEY4] = KEYBOARD_V;
     m_map[SPACE] = KEYBOARD_SPACE;
 
     // Mouse mappings are unused for keyboard-based mapping API, initialize defensively
@@ -77,6 +78,7 @@ bool Controller::isRightPressed() const { return m_pressed[RIGHT]; }
 bool Controller::isKey1Pressed() const { return m_pressed[KEY1]; }
 bool Controller::isKey2Pressed() const { return m_pressed[KEY2]; }
 bool Controller::isKey3Pressed() const { return m_pressed[KEY3]; }
+bool Controller::isKey4Pressed() const { return m_pressed[KEY4]; }
 bool Controller::isSpacePressed() const { return m_pressed[SPACE]; }
 
 int Controller::getMouseX() const { return mouseX; }

@@ -27,6 +27,8 @@ public:
     bool isKey2Pressed() const;
     /// @return whether action button 3 has been pressed this frame
     bool isKey3Pressed() const;
+    /// @return whether action button 4 has been pressed this frame
+    bool isKey4Pressed() const;
     /// @return the current mouse x position, relative to the game window
     int getMouseX() const;
     /// @return the current mouse y position, relative to the game window
@@ -45,7 +47,7 @@ private:
         UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3,
         KEY1 = 4, KEY2 = 5, KEY3 = 6,
         MOUSE_LEFT = 7, MOUSE_RIGHT = 8,
-        SPACE = 9, COUNT = 10
+        KEY4 = 9, SPACE = 10, COUNT = 11
     };
 
     // Change mapping for an index to a different keyboard constant
