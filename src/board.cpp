@@ -264,23 +264,13 @@ bool Board::dump(const std::string& output_path) const
     {
         for (int x = 0; x < m_width; x++)
         {
-            Candy* currCandy = getCell(x, y);
-            if (currCandy == nullptr)
-                file << '-';
-            else
             {
-                switch (currCandy->getType())
-                {
-                case CandyType::TYPE_RED: file << 'R'; break;
-                case CandyType::TYPE_GREEN: file << 'G'; break;
-                case CandyType::TYPE_BLUE: file << 'B'; break;
-                case CandyType::TYPE_YELLOW: file << 'Y'; break;
-                case CandyType::TYPE_PURPLE: file << 'P'; break;
-                case CandyType::TYPE_ORANGE: file << 'O'; break;
-                default: file << '-'; break;
-                }
+                Candy* currCandy = getCell(x, y);
+                int code = (currCandy != nullptr) ? (int)currCandy->getType() : -1;
+                file << code << " ";
             }
-            file << ' ';
+            file << "\n";
+
         }
         file << std::endl;
     }
@@ -306,26 +296,18 @@ bool Board::load(const std::string& input_path)
         return false;
     }
 
-    char charCandy;
-    CandyType type;
     for (int y = 0; y < height; y++)
-    {
         for (int x = 0; x < width; x++)
         {
-            file >> charCandy;
-            switch (charCandy)
+            int code;
+            file >> code;
+            if (code == -1)
+                setCell(nullptr, x, y);   // setCell ya borra lo que hubiera
+            else
             {
-            case 'R': type = CandyType::TYPE_RED; break;
-            case 'G': type = CandyType::TYPE_GREEN; break;
-            case 'B': type = CandyType::TYPE_BLUE; break;
-            case 'Y': type = CandyType::TYPE_YELLOW; break;
-            case 'P': type = CandyType::TYPE_PURPLE; break;
-            case 'O': type = CandyType::TYPE_ORANGE; break;
-            default: type = CandyType::COUNT; break;
+                Candy temp((CandyType)code);       // caramelo temporal en la pila
+                setCell(&temp, x, y);     // setCell hace SU copia; temp se destruye solo
             }
-            Candy* newCandy = type != CandyType::COUNT ? new Candy(type) : nullptr;
-            setCell(newCandy, x, y);
-        }
     }
 
     file.close();

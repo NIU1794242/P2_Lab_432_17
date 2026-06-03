@@ -35,6 +35,8 @@ public:
     bool isMouseLeftPressed() const;
     /// @return whether the right mouse button has been pressed this frame
     bool isMouseRightPressed() const;
+    /// @return whether the right mouse button has been pressed this frame
+    bool isSpacePressed() const;
 
 private:
     // Limit the options for controller buttons
@@ -43,7 +45,7 @@ private:
         UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3,
         KEY1 = 4, KEY2 = 5, KEY3 = 6,
         MOUSE_LEFT = 7, MOUSE_RIGHT = 8,
-        COUNT = 9
+        SPACE = 9, COUNT = 10
     };
 
     // Change mapping for an index to a different keyboard constant

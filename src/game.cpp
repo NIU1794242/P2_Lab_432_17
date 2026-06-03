@@ -161,7 +161,6 @@ void Game::resolveExplosions()
     // dentro de explodeAndDrop (con setCell(nullptr, ...)).
 }
 
-
 //          ---Bucle del juego---
 void Game::update(const Controller& controller)
 {
@@ -189,8 +188,13 @@ void Game::update(const Controller& controller)
     // Bajar: 1 vez cada 60 frames, o ya mismo si pulsas Abajo
     m_frameCounter = m_frameCounter + 1;
     bool bajar = (m_frameCounter >= FRAMES_PER_DROP) || controller.isDownPressed();
-
-    if (bajar)
+    if (controller.isSpacePressed())
+    {
+        while (canMoveTo(m_blockX, m_blockY + 1))
+            m_blockY++;
+        landBlock();
+    }
+    else if (bajar)
     {
         m_frameCounter = 0;
         if (canMoveTo(m_blockX, m_blockY + 1))
@@ -268,7 +272,6 @@ bool Game::dump(const std::string& output_path) const
     out << w << " " << h << "\n";
 
     for (int y = 0; y < h; ++y)
-    {
         for (int x = 0; x < w; ++x)
         {
             Candy* c = m_board->getCell(x, y);
@@ -276,7 +279,6 @@ bool Game::dump(const std::string& output_path) const
             out << code << " ";
         }
         out << "\n";
-    }
 
     int hayBloque = (m_block[0] != nullptr) ? 1 : 0;
     out << hayBloque << "\n";
