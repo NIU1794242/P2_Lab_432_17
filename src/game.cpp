@@ -22,7 +22,7 @@ static T_SOUND* cargarMusica(const std::string& nombre)
     return Sound_LoadMusic(&full[0], PLAY_FROM_DISK_STREAM);
 }
 
-//ARREGLAMOS SONIDOS ORBES QUE SE PIERDE
+// ARREGLAMOS SONIDOS ORBES QUE SE PIERDE
 // Existen en sound.cpp pero no están en sound.h; las declaramos para usarlas.
 extern void Sound_Lock();
 extern void Sound_Unlock();
@@ -36,7 +36,6 @@ static int reproducirEfecto(T_SOUND* s, int mode)
     Sound_Unlock();
     return slot;
 }
-
 
 Game::Game()
 {
@@ -127,13 +126,11 @@ void Game::landBlock()
     // Los que quedan por encima del tablero se descartan (overflow).
     for (int i = 0; i < BLOCK_SIZE; ++i)
     {
-        m_board->setCell(m_block[i], m_blockX, m_blockY + i);  // ignora filas < 0
+        m_board->generateCandy(m_block[i], m_blockX, m_blockY + i);  // ignora filas < 0
         delete m_block[i];
         m_block[i] = nullptr;
     }
 
-    // Primero explotamos: puede despejar la columna y "salvar" la partida
-    resolveExplosions();
 
     // Game over solo si el bloque desbordó por arriba Y, tras explotar,
     // la cima de esa columna SIGUE ocupada (no hubo hueco).
@@ -145,6 +142,7 @@ void Game::landBlock()
         return;
     }
 
+    resolveExplosions();
     spawnBlock();
 }
 
@@ -172,6 +170,7 @@ void Game::update(const Controller& controller)
     if (m_gameOver)
         return;
 
+    // Hard Mode (tecla V)
     if (controller.isKey4Pressed())
         hardMode = !hardMode;
 
@@ -185,19 +184,31 @@ void Game::update(const Controller& controller)
     if (controller.isKey1Pressed())
         rotateBlock();
 
-    // Guardar partida en data/save.txt (tecla W)
+    // Guardar partida en data/save.txt o en archivo de la consola de comnados (tecla W)
+    string filePath;
     if (controller.isKey2Pressed())
-        dump(getDataDirPath() + "save.txt");
+        /*if (cin >> filePath)
+            dump(filePath);
+        else*/
+            dump(getDataDirPath() + "save.txt");
 
-    // Bajar: 1 vez cada 60 frames, o ya mismo si pulsas Abajo
+    // Cargar partida de data/save.txt o de archivo de la consola de comnados (tecla W)
+    if(controller.isKey3Pressed())
+        /*if (cin >> filePath)
+            load(filePath);
+        else*/
+            load(getDataDirPath() + "save.txt");
+
     m_frameCounter = m_frameCounter + 1;
-    bool bajar = (m_frameCounter >= (int)((float)FRAMES_PER_DROP/(1.0+(float)hardMode * (float)m_score/DIFFICULTY)) || controller.isDownPressed());
+    bool bajar = (m_frameCounter >= (int)((float)FRAMES_PER_DROP/(1.0 + (float)hardMode * (float)m_score/DIFFICULTY)) || controller.isDownPressed());
+    // Hard drop, aterriza directamente (tecla SPACE)
     if (controller.isSpacePressed())
     {
         while (canMoveTo(m_blockX, m_blockY + 1))
             m_blockY++;
         landBlock();
     }
+    // Bajar: 1 vez cada 60 frames, o ya mismo si pulsas Abajo
     else if (bajar)
     {
         m_frameCounter = 0;
@@ -241,7 +252,7 @@ void Game::render(GraphicManager& graphics)
         }
 
     // El bloque que cae (puede estar por encima del tablero)
-    if (!m_gameOver)
+    if(!m_gameOver)
         for (int i = 0; i < BLOCK_SIZE; ++i)
             if (m_block[i] != nullptr)
                 graphics.drawImage(m_block[i]->getResourceName(),
@@ -282,6 +293,7 @@ bool Game::dump(const std::string& output_path) const
     out << w << " " << h << "\n";
 
     for (int y = 0; y < h; ++y)
+    {
         for (int x = 0; x < w; ++x)
         {
             Candy* c = m_board->getCell(x, y);
@@ -289,6 +301,7 @@ bool Game::dump(const std::string& output_path) const
             out << code << " ";
         }
         out << "\n";
+    }
 
     int hayBloque = (m_block[0] != nullptr) ? 1 : 0;
     out << hayBloque << "\n";
@@ -321,11 +334,11 @@ bool Game::load(const std::string& input_path)
             int code;
             in >> code;
             if (code == -1)
-                m_board->setCell(nullptr, x, y);   // setCell ya borra lo que hubiera
+                m_board->generateCandy(nullptr, x, y);   // generateCandy ya borra lo que hubiera
             else
             {
                 Candy temp((CandyType)code);       // caramelo temporal en la pila
-                m_board->setCell(&temp, x, y);     // setCell hace SU copia; temp se destruye solo
+                m_board->generateCandy(&temp, x, y);     // generateCandy hace SU copia; temp se destruye solo
             }
         }
 

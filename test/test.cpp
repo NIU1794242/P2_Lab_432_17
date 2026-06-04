@@ -67,9 +67,20 @@ bool test()
 #include "board.h"
 #include "candy.h"
 #include "util.h"
+#include "game.h"
 
 bool test()
 {
+    /*
+    
+    
+    
+                TESTS BOARD
+
+    
+    
+    */
+
     bool ok = true;
 
     // 1. Constructor, ancho, alto y tablero vacío
@@ -384,7 +395,7 @@ bool test()
 
         if (!b1.dump(fileName))
         {
-            std::cout << "Error en dump()" << std::endl;
+            std::cout << "Error en board.dump()" << std::endl;
             ok = false;
         }
 
@@ -392,7 +403,7 @@ bool test()
 
         if (!b2.load(fileName))
         {
-            std::cout << "Error en load() con fichero válido" << std::endl;
+            std::cout << "Error en board.load() con fichero válido" << std::endl;
             ok = false;
         }
 
@@ -434,11 +445,72 @@ bool test()
 
         if (b.load(fileName))
         {
-            std::cout << "load debería devolver false si el fichero no existe" << std::endl;
+            std::cout << "board.load debería devolver false si el fichero no existe" << std::endl;
             ok = false;
         }
     }
 
+    if (!ok)
+        std::cout << "\nFi d'errors en Board\n";
+    /*
+
+
+
+                TESTS GAME
+
+
+
+    */
+
+    // 1. Load, dump y operator== correctos
+    {
+        Game game1;
+        Game game2;
+        std::string fileName = getDataDirPath() + "saveTest.txt";
+        std::string testFileName = getDataDirPath() + "test.txt";
+        if (!game1.load(fileName) || !game2.load(fileName))
+        {
+            std::cout << "Error en game.load() con fichero válido" << std::endl;
+            ok = false;
+        }
+
+        if (!(game1 == game2))
+        {
+            std::cout << "Error en el operador == con caso vàlido" << std::endl;
+            ok = false;
+        }
+
+        if(!game1.dump(testFileName))
+        {
+            std::cout << "Error en game.dump()" << std::endl;
+            ok = false;
+        }
+        std::remove(testFileName.c_str());
+    }
+
+    // 2. Load con fichero inexistente
+    {
+        Game game;
+        std::string fileName = getDataDirPath() + "fichero_que_no_existe.txt";
+        if (game.load(fileName))
+        {
+            std::cout << "game.load debería devolver false si el fichero no existe" << std::endl;
+            ok = false;
+        }
+    }
+
+    // 3. Operador== en caso desigual
+    {
+        Game game1;
+        Game game2;
+        std::string fileName = getDataDirPath() + "saveTest.txt";
+        game1.load(fileName);
+        if (game1 == game2)
+        {
+            std::cout << "Error en operador== para games diferentes";
+            ok = false;
+        }
+    }
     return ok;
 }
 
