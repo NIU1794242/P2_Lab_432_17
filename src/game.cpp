@@ -184,20 +184,14 @@ void Game::update(const Controller& controller)
     if (controller.isKey1Pressed())
         rotateBlock();
 
-    // Guardar partida en data/save.txt o en archivo de la consola de comnados (tecla W)
+    // Guardar partida en data/save.txt (tecla W)
     string filePath;
     if (controller.isKey2Pressed())
-        /*if (cin >> filePath)
-            dump(filePath);
-        else*/
-            dump(getDataDirPath() + "save.txt");
+        dump(getDataDirPath() + "save.txt");
 
-    // Cargar partida de data/save.txt o de archivo de la consola de comnados (tecla W)
+    // Cargar partida de data/save.txt (tecla E)
     if(controller.isKey3Pressed())
-        /*if (cin >> filePath)
-            load(filePath);
-        else*/
-            load(getDataDirPath() + "save.txt");
+        load(getDataDirPath() + "save.txt");
 
     m_frameCounter = m_frameCounter + 1;
     bool bajar = (m_frameCounter >= (int)((float)FRAMES_PER_DROP/(1.0 + (float)hardMode * (float)m_score/DIFFICULTY)) || controller.isDownPressed());
