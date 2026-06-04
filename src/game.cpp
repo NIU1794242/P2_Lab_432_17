@@ -8,22 +8,21 @@
 #include <ctime>     // time
 #include "sound.h"
 
-// Carga un efecto de sonido por nombre, relativo a data/img/Audios/
+//Carga efectos de sonido "cortos"
 static T_SOUND* cargarSonido(const std::string& nombre)
 {
     std::string full = getDataDirPath() + "img/Audios/" + nombre;
     return Sound_LoadSound(&full[0]);   // Sound_LoadSound pide char*
 }
 
-// Carga y arranca una OST (música en streaming)
+// Carga y pone en modo Musica (entra en bucle)
 static T_SOUND* cargarMusica(const std::string& nombre)
 {
     std::string full = getDataDirPath() + "img/Audios/" + nombre;
     return Sound_LoadMusic(&full[0], PLAY_FROM_DISK_STREAM);
 }
 
-//ARREGLAMOS SONIDOS ORBES QUE SE PIERDE
-// Existen en sound.cpp pero no están en sound.h; las declaramos para usarlas.
+// He arreglado lo del sonido de orbes que se pierde. Es porque se queda sin "canales"
 extern void Sound_Lock();
 extern void Sound_Unlock();
 
@@ -32,7 +31,7 @@ static int reproducirEfecto(T_SOUND* s, int mode)
 {
     if (s == nullptr) return -1;
     Sound_Lock();
-    int slot = Sound_Play(s, mode);   // el lock de SDL es recursivo, no pasa nada
+    int slot = Sound_Play(s, mode);   
     Sound_Unlock();
     return slot;
 }
@@ -47,8 +46,9 @@ Game::Game()
     m_blockY = -BLOCK_SIZE;
     m_frameCounter = 0;
     m_gameOver = false;
-    m_score = 0; //SCORE
+    m_score = 0; //Score inicial
     hardMode = false;
+    v_Pressed_After_D_Rank = false;
 
     for (int i = 0; i < BLOCK_SIZE; ++i)
         m_block[i] = nullptr;
@@ -58,7 +58,8 @@ Game::Game()
 
 Game::~Game() 
 {
-    freeBlock();     // borra los caramelos del bloque que aún tengamos
+    //freeBlock();     // borra los caramelos del bloque que aún tengamos
+    //freeBlock ya no interesa porque los caramelos aun tienen que verse tras gameover
     delete m_board;  // el destructor de Board borra los de las celdas
 }
 
@@ -69,13 +70,14 @@ void Game::spawnBlock()
     m_blockY = -BLOCK_SIZE;  // del todo fuera: filas -3, -2, -1
 
     int numTypes = (int)CandyType::COUNT;  // 6 tipos
-    for (int i = 0; i < BLOCK_SIZE; ++i)
+    for (int i = 0; i < BLOCK_SIZE; ++i) //Genera Caramelos para BLOCK (spawn)
     {
         int t = rand() % numTypes;         // 0..5
         m_block[i] = new Candy((CandyType)t);
     }
     m_frameCounter = 0;
 }
+
 
 // Borra los 3 caramelos del bloque (si los hay)
 void Game::freeBlock()
@@ -119,41 +121,41 @@ bool Game::canMoveTo(int newX, int newY) const
     return true;
 }
 
-// ---------- Aterrizaje y explosiones ----------
+//  Aterrizaje y explosiones 
 
 void Game::landBlock()
 {
-    // Colocamos en el tablero los caramelos que caben (filas >= 0).
-    // Los que quedan por encima del tablero se descartan (overflow).
+    // Si la parte de arriba está fuera del tablero, no cabe => fin del juego
+    if (m_blockY < 0)
+    {
+        m_gameOver = true;
+        reproducirEfecto(m_sndGameOver, SOUND_PLAY_NORMAL);
+        return;  // los caramelos del bloque se borran en el destructor
+    }
+
+    // Congelamos el bloque en el tablero (ahora los caramelos son del Board)
     for (int i = 0; i < BLOCK_SIZE; ++i)
     {
-        m_board->setCell(m_block[i], m_blockX, m_blockY + i);  // ignora filas < 0
-        delete m_block[i];
+        m_board->setCell(m_block[i], m_blockX, m_blockY + i);  // el Board copia
+        delete m_block[i];                                     // borras tu original
         m_block[i] = nullptr;
     }
 
-    // Primero explotamos: puede despejar la columna y "salvar" la partida
     resolveExplosions();
-
-    // Game over solo si el bloque desbordó por arriba Y, tras explotar,
-    // la cima de esa columna SIGUE ocupada (no hubo hueco).
-    if (m_blockY < 0 && m_board->getCell(m_blockX, 0) != nullptr)
-    {
-        m_gameOver = true;
-        if (m_soundReady && m_sndGameOver != nullptr)
-            reproducirEfecto(m_sndGameOver, SOUND_PLAY_NORMAL);
-        return;
-    }
-
     spawnBlock();
 }
 
 void Game::resolveExplosions()
 {
     std::vector<Candy*> explotados = m_board->explodeAndDrop();
-    const int PUNTOS_POR_CARAMELO = 1;   //IMPORTANTE MODIFICAR ESTO ANTES DE ENTREGA
+    const int PUNTOS_POR_CARAMELO = 1;   //Puntos por caramelo
     m_score += (int)explotados.size() * PUNTOS_POR_CARAMELO;
 
+    //Sonido al explotar más de 5 caramelos: JACKPOT 
+    if ((int)explotados.size() >= 5) 
+    {
+        reproducirEfecto(m_sndJackpot, SOUND_PLAY_NORMAL);
+    }
     // Sonido al explotar candys
     if (!explotados.empty() && m_soundReady && m_sndExplode != nullptr)
         reproducirEfecto(m_sndExplode, SOUND_PLAY_NORMAL);
@@ -162,7 +164,7 @@ void Game::resolveExplosions()
     // dentro de explodeAndDrop (con setCell(nullptr, ...)).
 }
 
-//          ---Bucle del juego---
+//   Bucle del juego
 void Game::update(const Controller& controller)
 {
 
@@ -172,8 +174,19 @@ void Game::update(const Controller& controller)
     if (m_gameOver)
         return;
 
-    if (controller.isKey4Pressed())
-        hardMode = !hardMode;
+    
+    if (controller.isKey4Pressed()) //Hard mode V key
+    {
+        if (rankFromScore(m_score) < 1) {
+            hardMode = !hardMode;
+        }
+        else
+        {
+            //Tecla V aqpretada despues de rango D
+            v_Pressed_After_D_Rank = true;
+        }
+    }
+    
 
     // Mover a izquierda / derecha
     if (controller.isLeftPressed() && canMoveTo(m_blockX - 1, m_blockY))
@@ -241,12 +254,13 @@ void Game::render(GraphicManager& graphics)
         }
 
     // El bloque que cae (puede estar por encima del tablero)
-    if (!m_gameOver)
-        for (int i = 0; i < BLOCK_SIZE; ++i)
-            if (m_block[i] != nullptr)
-                graphics.drawImage(m_block[i]->getResourceName(),
-                    originX + m_blockX * CANDY_IMAGE_WIDTH,
-                    originY + (m_blockY + i) * CANDY_IMAGE_HEIGHT);
+    //if (!m_gameOver) --Comentado para que los caramelos se sigan viendo tras game over
+    for (int i = 0; i < BLOCK_SIZE; ++i)
+        if (m_block[i] != nullptr){
+            graphics.drawImage(m_block[i]->getResourceName(),
+            originX + m_blockX * CANDY_IMAGE_WIDTH,
+            originY + (m_blockY + i) * CANDY_IMAGE_HEIGHT);
+        }
 
     // Textos
     graphics.drawImage("img/logo_small.png", 10, 10);
@@ -262,6 +276,8 @@ void Game::render(GraphicManager& graphics)
     //Dibujar Rangos
     graphics.drawText("Score: " + std::to_string(m_score), 450, 10, 40, 230, 230, 230);
     drawRank(graphics, 620, 60);   // Dibujar rango x, y
+    if (v_Pressed_After_D_Rank)
+        graphics.drawText("(You can only change mode before D rank)", 474, 684, 10, 100, 100, 100);
 }
 
 void Game::run() 
@@ -325,7 +341,7 @@ bool Game::load(const std::string& input_path)
             else
             {
                 Candy temp((CandyType)code);       // caramelo temporal en la pila
-                m_board->setCell(&temp, x, y);     // setCell hace SU copia; temp se destruye solo
+                m_board->setCell(&temp, x, y);     // setCell hace SU copia, temp se destruye solo
             }
         }
 
@@ -399,9 +415,9 @@ bool Game::operator==(const Game& other) const
 void Game::initSound()
 {
     if (m_soundReady) return;
-    m_soundReady = true;          // lo marcamos ya, para no reintentar
+    m_soundReady = true;          // Lo marcamos true para que no vuelva a usarse este metodo
 
-    Sound_Init();                 // ¡UNA sola vez en todo el programa!
+    Sound_Init();                 // Estosolo ocurre una vez
 
     // Sonidos de rango (índices 1..7 = D..SSS)
     const char* nombres[8] = { nullptr, "D", "C", "B", "A", "S", "SS", "SSS" };
@@ -409,6 +425,7 @@ void Game::initSound()
         m_rankSounds[r] = cargarSonido(std::string(nombres[r]) + ".ogg");
 
     m_sndExplode = cargarSonido("orbs_def.ogg");
+    m_sndJackpot = cargarSonido("JACKPOT.ogg");
     m_sndGameOver = cargarSonido("Pathetic.ogg");
 
     // OST inicial: Devil_Trigger empieza a sonar al cargarse
@@ -451,7 +468,6 @@ void Game::updateSoundForScore()
     }
 }
 // Carpeta de los PNG de las letras de rango: la MISMA que los candys.
-// Ajústala si tus candys están en otra carpeta (ver nota abajo).
 static const std::string RANK_IMG_DIR = "img/candy/";
 
 void Game::drawRank(GraphicManager& graphics, int x, int y) const

@@ -6,7 +6,6 @@ Board::Board(int width, int height) : m_width(DEFAULT_BOARD_WIDTH), m_height(DEF
 m_candyRed(CandyType::TYPE_RED), m_candyGreen(CandyType::TYPE_GREEN), m_candyBlue(CandyType::TYPE_BLUE), 
 m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_candyOrange(CandyType::TYPE_ORANGE)
 {
-    // Implement your code here
     if (width > 0)
         m_width = width;
 
@@ -24,7 +23,6 @@ m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_
 
 Board::~Board()
 {
-    // Implement your code here
     clear();        
 }
 
@@ -76,7 +74,6 @@ bool Board::isValidPosition(int x, int y) const
 
 Candy* Board::getCell(int x, int y) const
 {
-    // Implement your code here
     Candy* cell = nullptr;
     if (isValidPosition(x, y))
         cell = m_board[y][x];
@@ -85,7 +82,6 @@ Candy* Board::getCell(int x, int y) const
 
 void Board::setCell(Candy* candy, int x, int y)
 {
-    // Implement your code here
     if (isValidPosition(x, y))
     {
         if (m_board[y][x] != nullptr)
@@ -96,13 +92,11 @@ void Board::setCell(Candy* candy, int x, int y)
 
 int Board::getWidth() const
 {
-    // Implement your code here
     return m_width;
 }
 
 int Board::getHeight() const
 {
-    // Implement your code here
     return m_height;
 }
 // Transformar en funciones
@@ -199,7 +193,6 @@ bool Board::shouldExplodeDiagonalDownTop(int x, int y, CandyType type) const
 
 std::vector<Candy*> Board::explodeAndDrop()
 {
-    // Implement your code here
     std::vector<Candy*> exploded;
     std::vector<std::vector<bool>> toExplode (m_height, std::vector<bool>(m_width, false));
     bool explosion = false;

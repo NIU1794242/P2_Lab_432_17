@@ -74,8 +74,9 @@ private:
     bool m_gameOver;
     int m_score;
     bool hardMode;
+    bool v_Pressed_After_D_Rank;
 
-    // --- Sonido (rangos + OST) ---
+    //Sonido (rangos + OST)
     bool m_soundReady = false;
     int  m_lastRank = 0;     // 0 = sin rango, 1..7 = D,C,B,A,S,SS,SSS
     int  m_lastOst = -1;    // 0 = Devil, 1 = Silver, 2 = Bury
@@ -84,12 +85,13 @@ private:
     T_SOUND* m_ostSilver = nullptr;
     T_SOUND* m_ostBury = nullptr;
     T_SOUND* m_sndExplode = nullptr;
+    T_SOUND* m_sndJackpot = nullptr;
     T_SOUND* m_sndGameOver = nullptr;
 
     // Helpers
     void spawnBlock();
     void freeBlock();
-    bool canMoveTo(int newX, int newY) const;  // can block occupy (newX, newY..+2)?
+    bool canMoveTo(int newX, int newY) const;  
     void rotateBlock();
     void landBlock();
     void resolveExplosions();
