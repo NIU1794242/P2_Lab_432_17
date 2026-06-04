@@ -23,6 +23,8 @@ static T_SOUND* cargarMusica(const std::string& nombre)
 }
 
 // He arreglado lo del sonido de orbes que se pierde. Es porque se queda sin "canales"
+// ARREGLAMOS SONIDOS ORBES QUE SE PIERDE
+// Existen en sound.cpp pero no están en sound.h; las declaramos para usarlas.
 extern void Sound_Lock();
 extern void Sound_Unlock();
 
@@ -35,7 +37,6 @@ static int reproducirEfecto(T_SOUND* s, int mode)
     Sound_Unlock();
     return slot;
 }
-
 
 Game::Game()
 {
@@ -136,7 +137,7 @@ void Game::landBlock()
     // Congelamos el bloque en el tablero (ahora los caramelos son del Board)
     for (int i = 0; i < BLOCK_SIZE; ++i)
     {
-        m_board->setCell(m_block[i], m_blockX, m_blockY + i);  // el Board copia
+        m_board->generateCandy(m_block[i], m_blockX, m_blockY + i);  // el Board copia
         delete m_block[i];                                     // borras tu original
         m_block[i] = nullptr;
     }
@@ -199,18 +200,24 @@ void Game::update(const Controller& controller)
         rotateBlock();
 
     // Guardar partida en data/save.txt (tecla W)
+    string filePath;
     if (controller.isKey2Pressed())
         dump(getDataDirPath() + "save.txt");
 
-    // Bajar: 1 vez cada 60 frames, o ya mismo si pulsas Abajo
+    // Cargar partida de data/save.txt (tecla E)
+    if(controller.isKey3Pressed())
+        load(getDataDirPath() + "save.txt");
+
     m_frameCounter = m_frameCounter + 1;
-    bool bajar = (m_frameCounter >= (int)((float)FRAMES_PER_DROP/(1.0+(float)hardMode * (float)m_score/DIFFICULTY)) || controller.isDownPressed());
+    bool bajar = (m_frameCounter >= (int)((float)FRAMES_PER_DROP/(1.0 + (float)hardMode * (float)m_score/DIFFICULTY)) || controller.isDownPressed());
+    // Hard drop, aterriza directamente (tecla SPACE)
     if (controller.isSpacePressed())
     {
         while (canMoveTo(m_blockX, m_blockY + 1))
             m_blockY++;
         landBlock();
     }
+    // Bajar: 1 vez cada 60 frames, o ya mismo si pulsas Abajo
     else if (bajar)
     {
         m_frameCounter = 0;
@@ -266,7 +273,6 @@ void Game::render(GraphicManager& graphics)
     graphics.drawImage("img/logo_small.png", 10, 10);
     if (m_gameOver)
         graphics.drawText("GAME OVER", 265, 315, 40, 240, 130, 130);
-    graphics.drawText("Score: " + std::to_string(m_score), 450, 10, 40, 125, 200, 125);
     graphics.drawText("Movement: [Up] [Down] [Left] [Right]  --  "
         "Buttons: [Q] [W] [E]  --  Exit [ESC]",
         25, 700, 20, 100, 100, 100);
@@ -298,6 +304,7 @@ bool Game::dump(const std::string& output_path) const
     out << w << " " << h << "\n";
 
     for (int y = 0; y < h; ++y)
+    {
         for (int x = 0; x < w; ++x)
         {
             Candy* c = m_board->getCell(x, y);
@@ -305,6 +312,7 @@ bool Game::dump(const std::string& output_path) const
             out << code << " ";
         }
         out << "\n";
+    }
 
     int hayBloque = (m_block[0] != nullptr) ? 1 : 0;
     out << hayBloque << "\n";
@@ -337,11 +345,11 @@ bool Game::load(const std::string& input_path)
             int code;
             in >> code;
             if (code == -1)
-                m_board->setCell(nullptr, x, y);   // setCell ya borra lo que hubiera
+                m_board->generateCandy(nullptr, x, y);   // generateCandy ya borra lo que hubiera
             else
             {
                 Candy temp((CandyType)code);       // caramelo temporal en la pila
-                m_board->setCell(&temp, x, y);     // setCell hace SU copia, temp se destruye solo
+                m_board->generateCandy(&temp, x, y);     // setCell hace SU copia, temp se destruye solo
             }
         }
 

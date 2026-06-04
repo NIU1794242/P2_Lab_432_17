@@ -2,9 +2,7 @@
 #include <memory>
 #include <iostream>
 
-Board::Board(int width, int height) : m_width(DEFAULT_BOARD_WIDTH), m_height(DEFAULT_BOARD_HEIGHT),
-m_candyRed(CandyType::TYPE_RED), m_candyGreen(CandyType::TYPE_GREEN), m_candyBlue(CandyType::TYPE_BLUE), 
-m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_candyOrange(CandyType::TYPE_ORANGE)
+Board::Board(int width, int height) : m_width(DEFAULT_BOARD_WIDTH), m_height(DEFAULT_BOARD_HEIGHT)
 {
     if (width > 0)
         m_width = width;
@@ -13,11 +11,16 @@ m_candyYellow(CandyType::TYPE_YELLOW), m_candyPurple(CandyType::TYPE_PURPLE), m_
         m_height = height;
 
     m_board = new Candy**[m_height];
+    m_originals = new bool*[m_height];
     for (int y = 0; y < m_height; y++)
     {
         m_board[y] = new Candy*[m_width];
+        m_originals[y] = new bool[m_width];
         for (int x = 0; x < m_width; x++)
+        {
             m_board[y][x] = nullptr;
+            m_originals[y][x] = true;
+        }
     }
 }
 
@@ -35,15 +38,22 @@ void Board::clear()
             if (m_board[y] != nullptr)
             {
                 for (int x = 0; x < m_width; x++)
-                    if (m_board[y][x] != nullptr)
-                        delete m_board[y][x];
+                    setCell(nullptr, x, y);
 
                 delete[] m_board[y];
             }
         }
         delete[] m_board;
     }
+    if (m_originals != nullptr)
+    {
+        for (int y = 0; y < m_height; y++)
+            if (m_originals[y] != nullptr)
+                delete[] m_originals[y];
+        delete[] m_originals;
+    }
     m_board = nullptr;
+    m_originals = nullptr;
     m_width = 0;
     m_height = 0;
 }
@@ -57,11 +67,16 @@ bool Board::clearAndResize(int width, int height)
         m_width = width;
         m_height = height;
         m_board = new Candy**[m_height];
+        m_originals = new bool* [m_height];
         for (int y = 0; y < m_height; y++)
         {
-            m_board[y] = new Candy*[m_width];
+            m_board[y] = new Candy * [m_width];
+            m_originals[y] = new bool[m_width];
             for (int x = 0; x < m_width; x++)
+            {
                 m_board[y][x] = nullptr;
+                m_originals[y][x] = true;
+            }
         }
     }
     return canResize;
@@ -84,8 +99,21 @@ void Board::setCell(Candy* candy, int x, int y)
 {
     if (isValidPosition(x, y))
     {
-        if (m_board[y][x] != nullptr)
+        if (m_board[y][x] != nullptr && m_originals[y][x])
             delete m_board[y][x];
+        m_originals[y][x] = candy == nullptr;
+        m_board[y][x] = candy;
+    }
+}
+
+void Board::generateCandy(Candy* candy, int x, int y)
+{
+    // Implement your code here
+    if (isValidPosition(x, y))
+    {
+        if (m_board[y][x] != nullptr && m_originals[y][x])
+            delete m_board[y][x];
+        m_originals[y][x] = true;
         m_board[y][x] = candy != nullptr ? new Candy(candy->getType()) : nullptr;
     }
 }
@@ -211,7 +239,7 @@ std::vector<Candy*> Board::explodeAndDrop()
                 {
                     explosion = true;
                     exploded.push_back(m_board[y][x]);
-                    setCell(nullptr, x, y);
+                    generateCandy(nullptr, x, y);
                 }
 
         // hacer caer los candy
@@ -228,12 +256,14 @@ std::vector<Candy*> Board::explodeAndDrop()
                     if (y - shift >= 0)
                     {
                         m_board[y][x] = m_board[y - shift][x];
+                        m_originals[y][x] = m_originals[y - shift][x];
                         y--;
                     }
                 }
                 while (y >= 0)
                 {
                     m_board[y][x] = nullptr;
+                    m_originals[y][x] = true;
                     y--;
                 }
             }
@@ -257,15 +287,12 @@ bool Board::dump(const std::string& output_path) const
     {
         for (int x = 0; x < m_width; x++)
         {
-            {
-                Candy* currCandy = getCell(x, y);
-                int code = (currCandy != nullptr) ? (int)currCandy->getType() : -1;
-                file << code << " ";
-            }
-            file << "\n";
+            Candy* currCandy = getCell(x, y);
+            int code = (currCandy != nullptr) ? (int)currCandy->getType() : -1;
+            file << code << " ";
 
         }
-        file << std::endl;
+        file << "\n";
     }
 
     file.close();
@@ -299,7 +326,7 @@ bool Board::load(const std::string& input_path)
             else
             {
                 Candy temp((CandyType)code);       // caramelo temporal en la pila
-                setCell(&temp, x, y);     // setCell hace SU copia; temp se destruye solo
+                generateCandy(&temp, x, y);     // setCell hace SU copia; temp se destruye solo
             }
     }
 

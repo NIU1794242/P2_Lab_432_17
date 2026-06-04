@@ -82,24 +82,21 @@ public:
      */
     void setCell(Candy* candy, int x, int y);
 
+    void generateCandy(Candy* candy, int x, int y);
+
     /// Get the board width
     int getWidth() const;
 
     /// Get the board height
     int getHeight() const;
 
+    bool isValidPosition(int x, int y) const;
 
 private:
     Candy*** m_board;
+    bool** m_originals;
     int m_height;
     int m_width;
-    Candy m_candyRed;
-    Candy m_candyGreen;
-    Candy m_candyBlue;
-    Candy m_candyYellow;
-    Candy m_candyPurple;
-    Candy m_candyOrange;
-    bool isValidPosition(int x, int y) const;
     bool shouldExplodeVertical(int x, int y, CandyType type) const;
     bool shouldExplodeHorizontal(int x, int y, CandyType type) const;
     bool shouldExplodeDiagonalTopDown(int x, int y, CandyType type) const;
