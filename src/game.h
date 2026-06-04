@@ -65,6 +65,7 @@ private:
     static const int SPAWN_COLUMN = 5;      // 6a columna (empezando en 0)
     static const int FRAMES_PER_DROP = 60;  // baja 1 vez por segundo 60 fps
     static const int DIFFICULTY = 200;      // cuanto mas cerca de 0 mayor la difficultad
+    static const int JACKPOT = 7;           // puntuacion minima para activar el sonido de jackpot
 
     Board* m_board;
     Candy* m_block[BLOCK_SIZE];  // 0 = arriba, 2 = abajo; nullptr si no hay

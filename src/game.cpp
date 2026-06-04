@@ -150,13 +150,15 @@ void Game::resolveExplosions()
 {
     std::vector<Candy*> explotados = m_board->explodeAndDrop();
     const int PUNTOS_POR_CARAMELO = 1;   //Puntos por caramelo
-    m_score += (int)explotados.size() * PUNTOS_POR_CARAMELO;
 
-    //Sonido al explotar más de 5 caramelos: JACKPOT 
-    if ((int)explotados.size() >= 5) 
+    //Sonido al explotar más de 7 caramelos: JACKPOT 
+    if ((int)explotados.size() >= JACKPOT) 
     {
         reproducirEfecto(m_sndJackpot, SOUND_PLAY_NORMAL);
+        m_score += (int)explotados.size() * PUNTOS_POR_CARAMELO * 5 / 4;
     }
+    else
+        m_score += (int)explotados.size() * PUNTOS_POR_CARAMELO;
     // Sonido al explotar candys
     if (!explotados.empty() && m_soundReady && m_sndExplode != nullptr)
         reproducirEfecto(m_sndExplode, SOUND_PLAY_NORMAL);
