@@ -467,7 +467,7 @@ void Game::updateSoundForScore()
 
     // OST según puntuación: Devil (0), Silver (>=60), Bury (>=90)
     int ost = 0;
-    if (m_score >= 140) ost = 2;
+    if (m_score >= 150) ost = 2;
     else if (m_score >= 60) ost = 1;
 
     if (ost != m_lastOst)
